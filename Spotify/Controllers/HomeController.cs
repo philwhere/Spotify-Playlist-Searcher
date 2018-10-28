@@ -46,8 +46,8 @@ namespace Spotify.Controllers
 
         public async Task<IActionResult> PlaylistSearch()
         {
-            //var playlists = await GetPlaylists("phil.where");
-            var playlists = this.GetEmbeddedResourceJsonAs<PlaylistsResponse>("DataDump.json");
+            var playlists = await GetPlaylists("phil.where");
+            //var playlists = this.GetEmbeddedResourceJsonAs<PlaylistsResponse>("DataDump.json");
             return View(playlists);
         }
 
@@ -61,7 +61,6 @@ namespace Spotify.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-
 
 
         private void SetupAuth()
