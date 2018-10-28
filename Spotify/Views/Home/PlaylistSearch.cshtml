@@ -1,0 +1,121 @@
+﻿@model Spotify.Models.PlaylistsResponse
+
+@{
+    ViewData["Title"] = "PlaylistSearch";
+}
+
+<h2>Playlist Search</h2>
+
+<div>
+    <h4>@Html.DisplayFor(model => model.href)</h4>
+    <hr />
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="input-group">
+                <input id="searchbar" class="form-control" aria-label="Text input with multiple buttons">
+                <div class="input-group-btn">
+                    <button id="goArtist" type="button" class="btn btn-default">
+                        Artist
+                    </button>
+                    <button id="goSong" type="button" class="btn btn-default">
+                        Song
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="input-group">
+                <input type="text" class="form-control" aria-label="...">
+                <div class="input-group-btn">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action <span class="caret"></span></button>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                        <li><a href="#">Action</a></li>
+                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="#">Separated link</a></li>
+                    </ul>
+                </div><!-- /btn-group -->
+            </div><!-- /input-group -->
+        </div><!-- /.col-lg-6 -->
+    </div>
+    <hr />
+    <dl id="resultsContainer" class="dl-horizontal"></dl>
+    <div class="panel panel-default">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th class="text-center">Playlist</thclass="text-center">
+                    <th class="text-center">Artist</th>
+                    <th class="text-center">Track</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+</div>
+<div>
+    @*@Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
+        <a asp-action="Index">Back to List</a>*@
+</div>
+
+
+@section scripts {
+    <script>
+        var spotifyPlaylists = @Html.Raw(Json.Serialize(Model.items));
+
+        function ShowResults(matches, query, filterSongs, filterArtist) {
+            $("#resultsContainer").empty();
+            $(matches).each(function (i, p) {
+                $("#resultsContainer").append(
+                    `<dt>
+                        ${p.name}
+                    </dt>`);
+
+                var songs = this.songs.items;
+                if (filterSongs)
+                    songs = songs.filter(s => PartialMatchName(s.track.name, query));
+                else if (filterArtist)
+                    songs = songs.filter(s => PartialMatchName(s.track.artistsString, query));
+
+                $(songs).each(function (i, s) {
+                    $("#resultsContainer").append(
+                        `<dd>
+                        ${s.track.artistsString} - ${s.track.name}
+                    </dd>`);
+                    $("#tableBody").append(
+                        `<tr>
+                            <td class="text-center">${p.name}</td>
+                            <td class="text-center">${s.track.artistsString}</td>
+                            <td class="text-center">${s.track.name}</td>
+                        </tr>`);
+                });
+                $("#resultsContainer").append("<hr />");
+            });
+        }
+
+        $("#goSong").click(function () {
+            var query = $("#searchbar").val();
+            var matches = spotifyPlaylists
+                .filter(p => p.songs.items
+                    .find(s => PartialMatchName(s.track.name, query)));
+            ShowResults(matches, query, true, false);
+        });
+
+        $("#goArtist").click(function () {
+            var query = $("#searchbar").val();
+            var matches = spotifyPlaylists
+                .filter(p => p.songs.items
+                    .find(s => PartialMatchName(s.track.artistsString, query)));
+            ShowResults(matches, query, false, true);
+        });
+
+        function PartialMatchName(name, queriedTrackName) {
+            return name.toLowerCase().includes(queriedTrackName.toLowerCase().trim());
+        }
+
+        $(document).ready(function () {
+            $("#footerHr").hide();
+        });
+    </script>
+}

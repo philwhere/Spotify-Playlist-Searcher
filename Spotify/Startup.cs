@@ -31,7 +31,7 @@ namespace Spotify
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-
+            services.AddMemoryCache();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
 
