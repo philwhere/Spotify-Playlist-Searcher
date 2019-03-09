@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using Spotify.Extensions;
 using Spotify.Models;
 using Spotify.Services;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Spotify.Controllers
 {
@@ -43,11 +45,12 @@ namespace Spotify.Controllers
             return View();
         }
 
-        public async Task<IActionResult> PlaylistSearch(string accessToken)
+        public async Task<IActionResult> PlaylistSearch(string access_token)
         {
-            if (string.IsNullOrEmpty(accessToken))
+            if (string.IsNullOrEmpty(access_token))
                 return RedirectToAction("Index");
-            var playlists = await SpotifyClient.GetPlaylistsWithSongs(accessToken);
+            var playlists = (await SpotifyClient.GetPlaylistsWithSongs(access_token)).items;
+            //var playlists = this.GetEmbeddedResourceJsonAs<List<PlaylistItem>>("DataDump.json");
             return View(playlists);
         }
 

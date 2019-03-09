@@ -1,4 +1,4 @@
-﻿@model Spotify.Models.SpotifyItemResponse<PlaylistItem>
+﻿@model List<Spotify.Models.PlaylistItem>
 
 @{
     ViewData["Title"] = "PlaylistSearch";
@@ -10,19 +10,6 @@
     <h4>Farts</h4>
     <hr />
     <div class="row">
-        @*<div class="col-lg-6">
-            <div class="input-group">
-                <input id="searchbar" class="form-control" aria-label="Text input with multiple buttons">
-                <div class="input-group-btn">
-                    <button id="goArtist" type="button" class="btn btn-default">
-                        Artist
-                    </button>
-                    <button id="goSong" type="button" class="btn btn-default">
-                        Song
-                    </button>
-                </div>
-            </div>
-        </div>*@
         <div class="col-lg-6">
             <div class="input-group">
                 <input id="searchbar" type="text" class="form-control" aria-label="...">
@@ -30,15 +17,14 @@
                     <button id="selectedSearchOption" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">All <span class="caret"></span></button>
                     <ul id="searchOptions" class="dropdown-menu dropdown-menu-right">
                         <li><a href="#">All</a></li>
-                        <li><a href="#">Song</a></li>
-                        <li><a href="#">Artist</a></li>
+                        <li id="searchGo"><a href="#">Song</a></li>
+                        <li id="searchArtist"><a href="#">Artist</a></li>
                     </ul>
                 </div><!-- /btn-group -->
             </div><!-- /input-group -->
         </div><!-- /.col-lg-6 -->
     </div>
     <hr />
-    @*<dl id="resultsContainer" class="dl-horizontal"></dl>*@
     <div id="tablePanel" class="panel panel-default">
         <table class="table table-bordered">
             <thead>
@@ -53,96 +39,73 @@
     </div>
 </div>
 <div>
-    @*@Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
-        <a asp-action="Index">Back to List</a>*@
 </div>
 
 
 @section scripts {
     <script>
-        var spotifyPlaylists = @Html.Raw(Json.Serialize(Model.items));
+        var playlists = @Html.Raw(Json.Serialize(Model));
 
-        function ShowResults(matches, query) {
-            //$("#resultsContainer").empty();
+        function Search() {
+            var query = $("#searchbar").val();
+            if (query.length > 0) {
+                var playlistMatches = playlists
+                    .filter(p => p.songs.items
+                        .find(s => GetMatch(s.track, query)));
+                ShowResults(playlistMatches, query);
+            }
+        }
+
+        function ShowResults(playlistMatches, query) {
             $("#tableBody").empty();
-            $(matches).each(function (i, p) {
-                //$("#resultsContainer").append(`<dt>${p.name}</dt>`);
+            $(playlistMatches).each((i, playlist) => {
                 var row = `<tr>
-                            <td class="text-center">${p.name}</td>`;
+                            <td class="text-center">${playlist.name}</td>`;
 
-                var songs = this.songs.items;
-                songs = songs.filter(s => PartialMatchName(s.track.name, query) || PartialMatchName(s.track.artistsString, query));
+                var playlistSongs = playlist.songs.items;
+                var songs = playlistSongs.filter(s => GetMatch(s.track, query));
 
-                var artists = ""
+                var artists = "";
                 var tracks = "";
 
-                $(songs).each(function (i, s) {
-                    //$("#resultsContainer").append(`<dd>${s.track.artistsString} - ${s.track.name}</dd>`);
-                    artists += `<p>${s.track.artistsString}</p>`;
-                    tracks += `<p>${s.track.name}</p>`;
-                    //$("#tableBody").append(
-                    //    `<tr>
-                    //        <td class="text-center">${p.name}</td>
-                    //        <td class="text-center">${s.track.artistsString}</td>
-                    //        <td class="text-center">${s.track.name}</td>
-                    //    </tr>`);
+                $(songs).each((i, song) => {
+                    artists += `<p>${song.track.artistsString}</p>`;
+                    tracks += `<p>${song.track.name}</p>`;
                 });
                 row += `<td>${artists}</td>
                         <td>${tracks}</td>
-                    </tr>`
+                    </tr>`;
                 $("#tableBody").append(row);
-                //$("#resultsContainer").append("<hr />");
             });
 
-            if (matches.length > 0)
+            if (playlistMatches.length > 0)
                 $("#tablePanel").show();
         }
 
-        $("#goSong").click(function () {
-            var query = $("#searchbar").val();
-            var matches = spotifyPlaylists
-                .filter(p => p.songs.items
-                    .find(s => PartialMatchName(s.track.name, query)));
-            ShowResults(matches, query);
-        });
-
-        $("#goArtist").click(function () {
-            var query = $("#searchbar").val();
-            var matches = spotifyPlaylists
-                .filter(p => p.songs.items
-                    .find(s => PartialMatchName(s.track.artistsString, query)));
-            ShowResults(matches, query);
-        });
-
-
-        $("#searchbar").keyup(function () {
-            var query = $(this).val();
-            var matches = spotifyPlaylists
-                .filter(p => p.songs.items
-                    .find(s => GetMatch(s.track, query)));
-            ShowResults(matches, query);
-        });
-
         function GetMatch(track, query) {
             if ($("#selectedSearchOption").text().includes("Song"))
-                return PartialMatchName(track.name, query)
+                return PartialMatch(track.name, query);
 
             if ($("#selectedSearchOption").text().includes("Artist"))
-                return PartialMatchName(track.artistsString, query)
+                return PartialMatch(track.artistsString, query);
 
-            return PartialMatchName(track.name, query) || PartialMatchName(track.artistsString, query);
+            return PartialMatch(track.name, query) || PartialMatch(track.artistsString, query);
         }
 
-        function PartialMatchName(name, queriedTrackName) {
-            return name.toLowerCase().includes(queriedTrackName.toLowerCase().trim());
+        function PartialMatch(type, query) {
+            return type.toLowerCase().includes(query.toLowerCase().trim());
         }
 
-        $("#searchOptions li").click(function () {
-            $("#selectedSearchOption").html(`${$(this).text()} <span class="caret"></span>`);
+
+        $("#searchbar").keyup(() => Search());
+
+        $("#searchOptions li").click((e) => {
+            var selectedOption = e.currentTarget.innerText;
+            $("#selectedSearchOption").html(`${selectedOption} <span class="caret"></span>`);
+            Search();
         });
 
-
-        $(document).ready(function () {
+        $(document).ready(() => {
             $("#tablePanel").hide();
         });
     </script>
