@@ -13,6 +13,7 @@ namespace Spotify.Services
         public SpotifyClient(HttpClient httpClient)
         {
             _httpClient = httpClient;
+            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
         
         public async Task<SpotifyItemResponse<PlaylistItem>> GetPlaylistsWithSongs(string accessToken)
