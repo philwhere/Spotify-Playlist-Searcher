@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Spotify.Models;
 
 namespace Spotify.Services
@@ -13,7 +14,8 @@ namespace Spotify.Services
         public SpotifyClient(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            _httpClient.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
         }
         
         public async Task<SpotifyItemResponse<PlaylistItem>> GetPlaylistsWithSongs(string accessToken)
@@ -67,7 +69,14 @@ namespace Spotify.Services
             if (bearerToken != null)
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
             var response = await _httpClient.SendAsync(request);
-            return await response.Content.ReadAsAsync<T>();
+            //return await response.Content.ReadAsAsync<T>();
+            return await Deserialize<T>(response.Content);
+        }
+
+        private static async Task<T> Deserialize<T>(HttpContent responseContent)
+        {
+            var json = await responseContent.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<T>(json);
         }
     }
 }
