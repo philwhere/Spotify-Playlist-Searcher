@@ -19,7 +19,7 @@ function ShowResults(playlistMatches, query) {
     });
 
     if (playlistMatches.length > 0)
-        $("#tablePanel").show();
+        $("#tablePanel").removeClass("hidden");
 }
 
 function ConstructRow(playlist, songs) {
