@@ -19,7 +19,7 @@ namespace Spotify.Controllers
 
         public IActionResult Index()
         {
-            ViewBag.ClientId = Configuration.GetValue<string>("Values:ClientId");
+            ViewBag.ClientId = Configuration.GetValue<string>("ClientId");
             return View();
         }
 
