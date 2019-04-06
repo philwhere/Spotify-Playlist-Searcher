@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Spotify.Services;
+using Spotify.Services.Interfaces;
 
 namespace Spotify.Controllers
 {
@@ -9,7 +9,12 @@ namespace Spotify.Controllers
     [ApiController]
     public class SpotifyController : ControllerBase
     {
-        private static readonly SpotifyClient _spotifyClient = new SpotifyClient();
+        private readonly ISpotifyClient _spotifyClient;
+
+        public SpotifyController(ISpotifyClient spotifyClient)
+        {
+            _spotifyClient = spotifyClient;
+        }
 
         [HttpDelete]
         [Route("playlists/{playlistId}/tracks/{trackUri}")]

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Spotify.Models;
-using Spotify.Services;
+using Spotify.Services.Interfaces;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
@@ -9,17 +9,18 @@ namespace Spotify.Controllers
 {
     public class HomeController : Controller
     {
-        private IConfiguration Configuration { get; }
-        private static readonly SpotifyClient SpotifyClient = new SpotifyClient();
+        private readonly IConfiguration _configuration;
+        private readonly ISpotifyClient _spotifyClient;
 
-        public HomeController(IConfiguration configuration)
+        public HomeController(IConfiguration configuration, ISpotifyClient spotifyClient)
         {
-            Configuration = configuration;
+            _configuration = configuration;
+            _spotifyClient = spotifyClient;
         }
 
         public IActionResult Index()
         {
-            ViewBag.ClientId = Configuration.GetValue<string>("ClientId");
+            ViewBag.ClientId = _configuration.GetValue<string>("ClientId");
             return View();
         }
 
@@ -43,7 +44,7 @@ namespace Spotify.Controllers
                 return RedirectToAction("Index");
             try
             {
-                var playlists = (await SpotifyClient.GetPlaylistsWithSongs(access_token)).items;
+                var playlists = (await _spotifyClient.GetPlaylistsWithSongs(access_token)).items;
                 //var playlists = this.GetEmbeddedResourceJsonAs<List<PlaylistItem>>("DataDump.json");
                 return View(playlists);
             }

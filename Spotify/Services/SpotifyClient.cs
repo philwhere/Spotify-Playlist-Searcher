@@ -5,15 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Spotify.Models;
+using Spotify.Services.Interfaces;
 
 namespace Spotify.Services
 {
-    public class SpotifyClient
+    public class SpotifyClient : ISpotifyClient
     {
-        private static HttpClient _httpClient => Singleton.HttpClient;
+        private readonly HttpClient _httpClient;
 
-        public SpotifyClient()
+        public SpotifyClient(HttpClient httpClient)
         {
+            _httpClient = httpClient;
             _httpClient.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
         }
