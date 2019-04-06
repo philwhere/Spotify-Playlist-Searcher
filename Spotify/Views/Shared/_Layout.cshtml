@@ -15,8 +15,11 @@
               asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute" />
         <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
     </environment>
+    <link rel="stylesheet" href="~/css/loaderAnimation.css" />
+    @RenderSection("Styles", required: false)
 </head>
 <body>
+    <partial name="_LoaderPartial" />
     <nav class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
             <div class="navbar-header">
@@ -69,7 +72,7 @@
         </script>
         <script src="~/js/site.min.js" asp-append-version="true"></script>
     </environment>
-
+    <script src="~/lib/lodash/lodash.js"></script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

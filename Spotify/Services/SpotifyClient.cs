@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Spotify.Models;
@@ -9,11 +10,10 @@ namespace Spotify.Services
 {
     public class SpotifyClient
     {
-        private static HttpClient _httpClient;
+        private static HttpClient _httpClient => Singleton.HttpClient;
 
-        public SpotifyClient(HttpClient httpClient)
+        public SpotifyClient()
         {
-            _httpClient = httpClient;
             _httpClient.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
         }
@@ -23,6 +23,17 @@ namespace Spotify.Services
             var playlists = await GetMyPlaylists(accessToken);
             await PopulateSongsForPlaylists(playlists.items, accessToken);
             return playlists;
+        }
+
+        public async Task RemoveTrackFromPlaylist(string playlistId, string trackUri, string accessToken)
+        {
+            var req = new HttpRequestMessage(HttpMethod.Delete, $"https://api.spotify.com/v1/playlists/{playlistId}/tracks");
+            var payload = new { tracks = new dynamic[] { new { uri = trackUri } } };
+            req.Content = CreateContent(payload);
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            var response = await _httpClient.SendAsync(req);
+            if (!response.IsSuccessStatusCode)
+                throw new HttpRequestException();
         }
 
 
@@ -63,20 +74,19 @@ namespace Spotify.Services
             return response;
         }
 
-        private async Task<T> Get<T>(string url, string bearerToken = null)
+        private async Task<T> Get<T>(string url, string accessToken = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, url);
-            if (bearerToken != null)
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
+            if (accessToken != null)
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
             var response = await _httpClient.SendAsync(request);
-            //return await response.Content.ReadAsAsync<T>();
-            return await Deserialize<T>(response.Content);
+            return await response.Content.ReadAsAsync<T>();
         }
 
-        private static async Task<T> Deserialize<T>(HttpContent responseContent)
+        private HttpContent CreateContent(object payloadObject)
         {
-            var json = await responseContent.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<T>(json);
+            var payload = JsonConvert.SerializeObject(payloadObject);
+            return new StringContent(payload, Encoding.UTF8, "application/json");
         }
     }
 }

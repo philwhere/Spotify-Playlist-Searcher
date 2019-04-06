@@ -58,7 +58,7 @@
 <div class="row">
     <div class="col-md-12 text-center">
         <h1>GET THAT TOKEN BOY</h1>
-        <a href="https://accounts.spotify.com/authorize?client_id=@(ViewBag.ClientId)&redirect_uri=@(UrlEncoder.Default.Encode(Context.Request.GetEncodedUrl()))&scope=playlist-read-private&response_type=token">
+        <a href="https://accounts.spotify.com/authorize?client_id=@(ViewBag.ClientId)&redirect_uri=@(UrlEncoder.Default.Encode(Context.Request.GetEncodedUrl()))&scope=playlist-read-private%20playlist-modify-public%20playlist-modify-private&response_type=token">
             <div class="btn btn-default">Authorize</div>
         </a>
     </div>

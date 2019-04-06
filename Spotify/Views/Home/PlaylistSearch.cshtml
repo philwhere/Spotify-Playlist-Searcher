@@ -7,7 +7,7 @@
 <h2>Playlist Search</h2>
 
 <div>
-    <h4>Farts</h4>
+    <h4>Farts</h4> 
     <hr />
     <div class="row">
         <div class="col-lg-6">
@@ -44,69 +44,11 @@
 
 @section scripts {
     <script>
-        var playlists = @Html.Raw(Json.Serialize(Model));
-
-        function Search() {
-            var query = $("#searchbar").val();
-            if (query.length > 0) {
-                var playlistMatches = playlists
-                    .filter(p => p.songs.items
-                        .find(s => GetMatch(s.track, query)));
-                ShowResults(playlistMatches, query);
-            }
-        }
-
-        function ShowResults(playlistMatches, query) {
-            $("#tableBody").empty();
-            $(playlistMatches).each((i, playlist) => {
-                var row = `<tr>
-                            <td class="text-center">${playlist.name}</td>`;
-
-                var playlistSongs = playlist.songs.items;
-                var songs = playlistSongs.filter(s => GetMatch(s.track, query));
-
-                var artists = "";
-                var tracks = "";
-
-                $(songs).each((i, song) => {
-                    artists += `<p>${song.track.artistsString}</p>`;
-                    tracks += `<p>${song.track.name}</p>`;
-                });
-                row += `<td>${artists}</td>
-                        <td>${tracks}</td>
-                    </tr>`;
-                $("#tableBody").append(row);
-            });
-
-            if (playlistMatches.length > 0)
-                $("#tablePanel").show();
-        }
-
-        function GetMatch(track, query) {
-            if ($("#selectedSearchOption").text().includes("Song"))
-                return PartialMatch(track.name, query);
-
-            if ($("#selectedSearchOption").text().includes("Artist"))
-                return PartialMatch(track.artistsString, query);
-
-            return PartialMatch(track.name, query) || PartialMatch(track.artistsString, query);
-        }
-
-        function PartialMatch(type, query) {
-            return type.toLowerCase().includes(query.toLowerCase().trim());
-        }
-
-
-        $("#searchbar").keyup(() => Search());
-
-        $("#searchOptions li").click((e) => {
-            var selectedOption = e.currentTarget.innerText;
-            $("#selectedSearchOption").html(`${selectedOption} <span class="caret"></span>`);
-            Search();
-        });
+        var Playlists = @Html.Raw(Json.Serialize(Model));
 
         $(document).ready(() => {
             $("#tablePanel").hide();
         });
     </script>
+    <script src="~/js/search/playlistSearch.js"></script>
 }
