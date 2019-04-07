@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Spotify.Extensions;
 using Spotify.Models;
 using Spotify.Services.Interfaces;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
@@ -38,7 +40,7 @@ namespace Spotify.Controllers
             return View();
         }
 
-        public async Task<IActionResult> PlaylistSearch(string access_token, string redirect_uri)
+        public async Task<IActionResult> PlaylistSearch(string access_token)
         {
             if (string.IsNullOrEmpty(access_token))
                 return RedirectToAction("Index");

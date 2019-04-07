@@ -7,7 +7,9 @@
 <h2>Playlist Search</h2>
 
 <div>
-    <h4>Farts</h4> 
+    <div id="clockdiv">
+        <h4>Session: <span class="minutes"></span>:<span class="seconds"></span></h4>
+    </div>
     <hr />
     <div class="row">
         <div class="col-lg-6">
@@ -43,8 +45,12 @@
 
 
 @section scripts {
+    <script src="~/js/countdown.js"></script>
     <script>
+        var sessionExpiry = parseInt(urlParams.get('expiry'));
+        initializeClock('clockdiv', new Date(sessionExpiry));
         var Playlists = @Html.Raw(Json.Serialize(Model));
+        $('#footerHr').addClass('hidden');
     </script>
     <script src="~/js/search/playlistSearch.js"></script>
 }

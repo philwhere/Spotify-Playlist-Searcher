@@ -81,7 +81,8 @@
         $(document).ready(function() {
             var params = getHashParams();
             if (params.access_token) {
-                window.location = `/home/playlistsearch?access_token=${params.access_token}`;
+                var expiry = new Date().valueOf() + params.expires_in * 1000;
+                window.location = `/home/playlistsearch?access_token=${params.access_token}&expiry=${expiry}`;
             }
         });
     </script>
