@@ -94,7 +94,6 @@ function GetNewAuthByRefreshToken() {
         UpdateQueryParams(response);
     }).fail(function () {
         alert("Refresh exploded");
-    }).always(function () {
         HideLoader();
     });
 }

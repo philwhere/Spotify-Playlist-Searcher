@@ -5,7 +5,7 @@ using Spotify.Services.Interfaces;
 
 namespace Spotify.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/spotify")]
     [ApiController]
     public class SpotifyController : ControllerBase
     {
