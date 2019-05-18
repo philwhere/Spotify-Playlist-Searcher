@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Spotify.Extensions;
+using Microsoft.Extensions.Options;
+using Spotify.Configuration;
 using Spotify.Models;
 using Spotify.Services.Interfaces;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
@@ -11,18 +10,18 @@ namespace Spotify.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly IConfiguration _configuration;
+        private readonly SpotifyClientConfiguration _configuration;
         private readonly ISpotifyClient _spotifyClient;
 
-        public HomeController(IConfiguration configuration, ISpotifyClient spotifyClient)
+        public HomeController(IOptions<SpotifyClientConfiguration> configuration, ISpotifyClient spotifyClient)
         {
-            _configuration = configuration;
+            _configuration = configuration.Value;
             _spotifyClient = spotifyClient;
         }
 
         public IActionResult Index()
         {
-            ViewBag.ClientId = _configuration.GetValue<string>("ClientId");
+            ViewBag.ClientId = _configuration.ClientId;
             return View();
         }
 

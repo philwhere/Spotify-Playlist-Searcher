@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using Microsoft.Extensions.Options;
+using Spotify.Configuration;
+using Spotify.Extensions;
 using Spotify.Models;
 using Spotify.Services.Interfaces;
 
@@ -11,15 +12,17 @@ namespace Spotify.Services
 {
     public class SpotifyClient : ISpotifyClient
     {
+        private readonly SpotifyClientConfiguration _configuration;
         private readonly HttpClient _httpClient;
 
-        public SpotifyClient(HttpClient httpClient)
+        public SpotifyClient(IOptions<SpotifyClientConfiguration> configuration, HttpClient httpClient)
         {
+            _configuration = configuration.Value;
             _httpClient = httpClient;
             _httpClient.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
         }
-        
+
         public async Task<SpotifyItemResponse<PlaylistItem>> GetPlaylistsWithSongs(string accessToken)
         {
             var playlists = await GetMyPlaylists(accessToken);
@@ -29,13 +32,18 @@ namespace Spotify.Services
 
         public async Task RemoveTrackFromPlaylist(string playlistId, string trackUri, string accessToken)
         {
-            var req = new HttpRequestMessage(HttpMethod.Delete, $"https://api.spotify.com/v1/playlists/{playlistId}/tracks");
+            var url = $"https://api.spotify.com/v1/playlists/{playlistId}/tracks";
             var payload = new { tracks = new dynamic[] { new { uri = trackUri } } };
-            req.Content = CreateContent(payload);
-            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            var response = await _httpClient.SendAsync(req);
-            if (!response.IsSuccessStatusCode)
-                throw new HttpRequestException();
+            var response = await _httpClient.DeleteWithToken<dynamic>(url, payload, accessToken);
+        }
+
+        public async Task<AuthorizationCodeResult> GetAuthorizationByCode(string authorizationCode, string redirectUri)
+        {
+            var url = $"https://accounts.spotify.com/api/token";
+            var payload = new AuthorizationTokenPayload(authorizationCode, redirectUri, 
+                _configuration.ClientId, _configuration.ClientSecret);
+            var response = await _httpClient.PostForm<AuthorizationCodeResult>(url, payload);
+            return response;
         }
 
 
@@ -61,34 +69,18 @@ namespace Spotify.Services
             await Task.WhenAll(songPopulationTasks);
         }
 
-
         private async Task<SpotifyItemResponse<TItem>> GetAllPages<TItem>(string firstPageUrl, string accessToken) where TItem : SpotifyItem
         {
-            var response = await Get<SpotifyItemResponse<TItem>>(firstPageUrl, accessToken);
+            var response = await _httpClient.GetWithToken<SpotifyItemResponse<TItem>>(firstPageUrl, accessToken);
             var nextPageUrl = response.next;
 
             while (nextPageUrl != null)
             {
-                var page = await Get<SpotifyItemResponse<TItem>>(nextPageUrl, accessToken);
+                var page = await _httpClient.GetWithToken<SpotifyItemResponse<TItem>>(nextPageUrl, accessToken);
                 response.items.AddRange(page.items);
                 nextPageUrl = page.next;
             }
             return response;
-        }
-
-        private async Task<T> Get<T>(string url, string accessToken = null)
-        {
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
-            if (accessToken != null)
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-            var response = await _httpClient.SendAsync(request);
-            return await response.Content.ReadAsAsync<T>();
-        }
-
-        private HttpContent CreateContent(object payloadObject)
-        {
-            var payload = JsonConvert.SerializeObject(payloadObject);
-            return new StringContent(payload, Encoding.UTF8, "application/json");
         }
     }
 }

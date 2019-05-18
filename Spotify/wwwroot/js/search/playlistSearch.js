@@ -70,8 +70,8 @@ function ListenForRemoveClicks() {
 
 function TriggerRemoval(playlistId, songUri) {
     var playlist = Playlists.find(p => p.id === playlistId);
-    var songName = playlist.songs.items.find(s => s.track.uri === songUri).track.name;
-    var confirmed = confirm(`Do you want to remove track "${songName}" from playlist "${playlist.name}"?`);
+    var track = playlist.songs.items.find(s => s.track.uri === songUri).track;
+    var confirmed = confirm(`Do you want to remove track "${track.name}" by "${track.artistsString}" from playlist "${playlist.name}"?`);
     if (confirmed)
         RemoveFromServer(RemoveSongFromLocal, playlistId, songUri);
 }

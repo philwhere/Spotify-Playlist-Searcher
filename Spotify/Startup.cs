@@ -4,8 +4,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Polly;
+using Polly.Extensions.Http;
+using Spotify.Configuration;
 using Spotify.Services;
 using Spotify.Services.Interfaces;
+using System;
+using System.Net.Http;
 
 namespace Spotify
 {
@@ -31,7 +36,12 @@ namespace Spotify
             services.AddMemoryCache();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-            services.AddHttpClient<ISpotifyClient, SpotifyClient>();
+
+            services.Configure<SpotifyClientConfiguration>(Configuration.GetSection("SpotifyClientConfiguration"));
+
+            services.AddHttpClient<ISpotifyClient, SpotifyClient>()
+                .SetHandlerLifetime(TimeSpan.FromMinutes(5))
+                .AddPolicyHandler(GetRetryPolicy());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -65,6 +75,18 @@ namespace Spotify
                 .AddEnvironmentVariables();
 
             Configuration = builder.Build();
+        }
+
+
+        private IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+        {
+            Random jitterer = new Random();
+            return HttpPolicyExtensions
+                .HandleTransientHttpError()
+                .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                .WaitAndRetryAsync(5,
+                  retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))
+                                + TimeSpan.FromMilliseconds(jitterer.Next(0, 666)));
         }
     }
 }

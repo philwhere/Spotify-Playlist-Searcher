@@ -58,14 +58,20 @@
 <div class="row">
     <div class="col-md-12 text-center">
         <h1>GET THAT TOKEN BOY</h1>
-        <a href="https://accounts.spotify.com/authorize?client_id=@(ViewBag.ClientId)&redirect_uri=@(UrlEncoder.Default.Encode(Context.Request.GetEncodedUrl()))&scope=playlist-read-private%20playlist-modify-public%20playlist-modify-private&response_type=token">
-            <div class="btn btn-default">Authorize</div>
+        <a href="https://accounts.spotify.com/authorize?client_id=@(ViewBag.ClientId)&redirect_uri=@(GetRedirectUri())&scope=playlist-read-private%20playlist-modify-public%20playlist-modify-private&response_type=token">
+            <div class="btn btn-default">Implicit Grant</div>
+        </a>
+    </div>
+    <div class="col-md-12 text-center">
+        <h1>GET THAT CODE BOY</h1>
+        <a href="https://accounts.spotify.com/authorize?client_id=@(ViewBag.ClientId)&redirect_uri=@(GetRedirectUri())&scope=playlist-read-private%20playlist-modify-public%20playlist-modify-private&response_type=code">
+            <div class="btn btn-default">Authorization Code</div>
         </a>
     </div>
 </div>
- 
+
 @section Scripts
-{
+    {
     <script>
         function getHashParams() {
             var hashParams = {};
@@ -78,12 +84,25 @@
             return hashParams;
         }
 
-        $(document).ready(function() {
+        $(document).ready(function () {
             var params = getHashParams();
             if (params.access_token) {
                 var expiry = new Date().valueOf() + params.expires_in * 1000;
                 window.location = `/home/playlistsearch?access_token=${params.access_token}&expiry=${expiry}`;
             }
+
+            //if (params.code) {
+            //    var expiry = new Date().valueOf() + params.expires_in * 1000;
+            //    window.location = `/home/privacy?access_token=${params.code}&expiry=${expiry}`;
+            //}
         });
     </script>
+}
+
+@functions {
+    string GetRedirectUri()
+    {
+        string baseUrl = Context.Request.Scheme + "://" + Context.Request.Host + "/";
+        return UrlEncoder.Default.Encode(baseUrl);
+    }
 }
