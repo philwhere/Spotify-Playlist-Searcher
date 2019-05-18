@@ -52,22 +52,6 @@ function PartialMatch(type, query) {
 }
 
 
-$("#searchbar").keyup(() => Search());
-
-$("#searchOptions li").click((e) => {
-    var selectedOption = e.currentTarget.innerText;
-    $("#selectedSearchOption").html(`${selectedOption} <span class="caret"></span>`);
-    Search();
-});
-
-function ListenForRemoveClicks() {
-    $(".song").click(function () {
-        var playlistId = $(this).attr("playlistId");
-        var songUri = $(this).attr("uri");
-        TriggerRemoval(playlistId, songUri);
-    });
-}
-
 function TriggerRemoval(playlistId, songUri) {
     var playlist = Playlists.find(p => p.id === playlistId);
     var track = playlist.songs.items.find(s => s.track.uri === songUri).track;
@@ -81,7 +65,7 @@ function RemoveFromServer(callback, playlistId, songUri) {
         url: `/api/spotify/playlists/${playlistId}/tracks/${songUri}`,
         type: 'delete',
         headers: {
-            'Authorization': `Bearer ${urlParams.get('access_token')}`
+            'Authorization': `Bearer ${UrlParams.get('access_token')}`
         },
         beforeSend: function () {
             ShowLoader();
@@ -99,3 +83,53 @@ function RemoveSongFromLocal(playlistId, songUri) {
     Search();
 }
 
+function GetNewAuthByRefreshToken() {
+    $.ajax({
+        url: `/api/spotify/token?refresh_token=${UrlParams.get('refresh_token')}`,
+        type: 'get',
+        beforeSend: function () {
+            ShowLoader();
+        }
+    }).done(function (response) {
+        UpdateQueryParams(response);
+    }).fail(function () {
+        alert("Refresh exploded");
+    }).always(function () {
+        HideLoader();
+    });
+}
+
+function UpdateQueryParams(authResponse) {
+    var expiry = CalculateUnixInMsExpiry(authResponse.expires_in);
+    UrlParams.set('expiry', expiry);
+    UrlParams.set('access_token', authResponse.access_token);
+    window.location.search = UrlParams.toString();
+}
+
+function ListenForRemoveClicks() {
+    $(".song").click(function () {
+        var playlistId = $(this).attr("playlistId");
+        var songUri = $(this).attr("uri");
+        TriggerRemoval(playlistId, songUri);
+    });
+}
+
+
+$(document).ready(function () {
+    var sessionExpiry = parseInt(UrlParams.get('expiry'));
+    initializeClock('clockdiv', new Date(sessionExpiry));
+    $('#footerHr').addClass('hidden');
+
+
+    // Listeners
+    // ------------------
+    $("#searchbar").keyup(() => Search());
+
+    $("#searchOptions li").click((e) => {
+        var selectedOption = e.currentTarget.innerText;
+        $("#selectedSearchOption").html(`${selectedOption} <span class="caret"></span>`);
+        Search();
+    });
+
+    $('#refreshButton').click(() => GetNewAuthByRefreshToken());
+});

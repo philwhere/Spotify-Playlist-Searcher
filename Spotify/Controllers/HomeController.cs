@@ -3,8 +3,12 @@ using Microsoft.Extensions.Options;
 using Spotify.Configuration;
 using Spotify.Models;
 using Spotify.Services.Interfaces;
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Spotify.Extensions; //Dev
+using Spotify.Models.Responses; //Dev
+using System.Collections.Generic; //Dev
 
 namespace Spotify.Controllers
 {
@@ -28,14 +32,20 @@ namespace Spotify.Controllers
         public IActionResult About()
         {
             ViewData["Message"] = "Your application description page.";
-
             return View();
+        }
+
+        public async Task<IActionResult> AuthCodeRedirect(string code, string redirect_uri)
+        {
+            var authorization = await _spotifyClient.GetAuthorizationByCode(code, redirect_uri);
+            var expiry = DateTimeOffset.Now.ToUnixTimeMilliseconds() + authorization.expires_in * 1000;
+            return RedirectToAction("PlaylistSearch", new 
+                { authorization.access_token, expiry, authorization.refresh_token });
         }
 
         public IActionResult Contact()
         {
             ViewData["Message"] = "Your contact page.";
-
             return View();
         }
 
@@ -49,7 +59,7 @@ namespace Spotify.Controllers
                 //var playlists = this.GetEmbeddedResourceJsonAs<List<PlaylistItem>>("DataDump.json");
                 return View(playlists);
             }
-            catch // TODO: Handle expired tokens better
+            catch
             {
                 return RedirectToAction("Index");
             }

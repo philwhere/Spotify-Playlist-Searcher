@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace Spotify.Models
+namespace Spotify.Models.Responses
 {
     public class Track
     {

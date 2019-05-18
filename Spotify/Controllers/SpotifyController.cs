@@ -20,10 +20,25 @@ namespace Spotify.Controllers
         [Route("playlists/{playlistId}/tracks/{trackUri}")]
         public async Task<IActionResult> RemoveTrackFromPlaylist(string playlistId, string trackUri)
         {
-            var header = Request.Headers["Authorization"].Single();
-            var token = header.Split(' ')[1];
+            string token = ExtractBearerToken();
             await _spotifyClient.RemoveTrackFromPlaylist(playlistId, trackUri, token);
             return new OkResult();
+        }
+
+        [HttpGet]
+        [Route("token")]
+        public async Task<IActionResult> GetTokenByRefresh(string refresh_token)
+        {
+            var auth = await _spotifyClient.GetTokenByRefresh(refresh_token);
+            return new OkObjectResult(auth);
+        }
+
+
+        private string ExtractBearerToken()
+        {
+            var header = Request.Headers["Authorization"].Single();
+            var token = header.Split(' ')[1];
+            return token;
         }
     }
 }

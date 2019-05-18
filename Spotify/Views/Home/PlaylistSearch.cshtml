@@ -1,14 +1,23 @@
-﻿@model List<Spotify.Models.PlaylistItem>
+﻿@using Microsoft.Extensions.Primitives;
+@using Spotify.Models.Responses;
+@model List<PlaylistItem>
 
 @{
-    ViewData["Title"] = "PlaylistSearch";
+    ViewData["Title"] = "Playlist Searcher";
 }
-
 <h2>Playlist Search</h2>
 
 <div>
-    <div id="clockdiv">
-        <h4>Session: <span class="minutes"></span>:<span class="seconds"></span></h4>
+    <div class="row">
+        <div id="clockdiv" class="col-xs-6">
+            <h4>Session: <span class="minutes"></span>:<span class="seconds"></span></h4>
+        </div>
+        @if (!StringValues.IsNullOrEmpty(Context.Request.Query["refresh_token"]))
+        {
+            <div class="col-xs-6 text-right ">
+                <div id="refreshButton" class="btn btn-default">Refresh Token</div>
+            </div>
+        }
     </div>
     <hr />
     <div class="row">
@@ -45,12 +54,9 @@
 
 
 @section scripts {
-    <script src="~/js/countdown.js"></script>
+    <script src="~/js/countdown.js" asp-append-version=true></script>
     <script>
-        var sessionExpiry = parseInt(urlParams.get('expiry'));
-        initializeClock('clockdiv', new Date(sessionExpiry));
         var Playlists = @Html.Raw(Json.Serialize(Model));
-        $('#footerHr').addClass('hidden');
     </script>
-    <script src="~/js/search/playlistSearch.js"></script>
+    <script src="~/js/search/playlistSearch.js" asp-append-version=true></script>
 }

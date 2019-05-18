@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Spotify.Models
+namespace Spotify.Models.Responses
 {
     public class PlaylistItem : SpotifyItem
     {

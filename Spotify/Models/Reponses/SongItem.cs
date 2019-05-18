@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Spotify.Models
+namespace Spotify.Models.Responses
 {
     public class SongItem : SpotifyItem
     {

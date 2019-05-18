@@ -12,4 +12,31 @@ function HideLoader() {
         $('#loader').toggleClass('hidden');
 }
 
-const urlParams = new URLSearchParams(window.location.search);
+const UrlParams = new URLSearchParams(window.location.search);
+
+function GetHashParams() {
+    var params = {};
+    var e,
+        r = /([^&;=]+)=?([^&;]*)/g,
+        q = window.location.hash.substring(1);
+    while (e = r.exec(q))
+        params[e[1]] = decodeURIComponent(e[2]);
+    return params;
+}
+
+function GetUrlParams() {
+    var params = {};
+    for (let param of UrlParams)
+        params[param[0]] = param[1];
+    return params;
+}
+
+function GetAllParams() {
+    var urlParams = GetUrlParams();
+    var hashParams = GetHashParams();
+    return Object.assign(urlParams, hashParams);
+}
+
+function CalculateUnixInMsExpiry(expiresInSeconds) {
+    return new Date().valueOf() + expiresInSeconds * 1000;
+}

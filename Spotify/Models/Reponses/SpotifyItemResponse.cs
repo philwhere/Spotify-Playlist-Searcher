@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Spotify.Models
+namespace Spotify.Models.Responses
 {
     public class SpotifyItemResponse<TItem> where TItem : SpotifyItem
     {

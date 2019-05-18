@@ -1,4 +1,4 @@
-﻿namespace Spotify.Models
+﻿namespace Spotify.Models.Responses
 {
     public abstract class SpotifyItem { }
 }

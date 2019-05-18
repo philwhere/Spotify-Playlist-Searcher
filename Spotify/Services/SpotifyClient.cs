@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using Spotify.Configuration;
 using Spotify.Extensions;
-using Spotify.Models;
+using Spotify.Models.Payloads;
+using Spotify.Models.Responses;
 using Spotify.Services.Interfaces;
 
 namespace Spotify.Services
@@ -46,6 +47,15 @@ namespace Spotify.Services
             return response;
         }
 
+        public async Task<RefreshTokenResult> GetTokenByRefresh(string refreshToken)
+        {
+            var url = $"https://accounts.spotify.com/api/token";
+            var payload = new RefreshTokenPayload(refreshToken, 
+                _configuration.ClientId, _configuration.ClientSecret);
+            var response = await _httpClient.PostForm<RefreshTokenResult>(url, payload);
+            return response;
+        }
+
 
         private async Task<SpotifyItemResponse<PlaylistItem>> GetMyPlaylists(string accessToken)
         {
@@ -54,7 +64,7 @@ namespace Spotify.Services
             return playlists;
         }
 
-        private async Task AddSongsToPlaylistAsync(PlaylistItem playlist, string accessToken)
+        private async Task AddSongsToPlaylist(PlaylistItem playlist, string accessToken)
         {
             var url = $"https://api.spotify.com/v1/playlists/{playlist.id}/tracks";
             var songs = await GetAllPages<SongItem>(url, accessToken);
@@ -65,7 +75,7 @@ namespace Spotify.Services
         {
             var songPopulationTasks = new List<Task>();
             foreach (var playlist in playlists)
-                songPopulationTasks.Add(AddSongsToPlaylistAsync(playlist, accessToken));
+                songPopulationTasks.Add(AddSongsToPlaylist(playlist, accessToken));
             await Task.WhenAll(songPopulationTasks);
         }
 
