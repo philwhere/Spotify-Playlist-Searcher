@@ -84,9 +84,8 @@ namespace Spotify
             return HttpPolicyExtensions
                 .HandleTransientHttpError()
                 .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
-                .WaitAndRetryAsync(5,
-                  retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))
-                                + TimeSpan.FromMilliseconds(jitterer.Next(0, 666)));
+                .WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.5, retryAttempt))
+                                                    + TimeSpan.FromMilliseconds(jitterer.Next(0, 666)));
         }
     }
 }
