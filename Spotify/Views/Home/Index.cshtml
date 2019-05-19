@@ -41,7 +41,7 @@
 @functions {
 string GetEncodedRedirectUri()
 {
-    string baseUrl = Context.Request.Scheme + "://" + Context.Request.Host + "/";
+    string baseUrl = $"{Context.Request.Scheme}://{Context.Request.Host}/";
     return UrlEncoder.Default.Encode(baseUrl);
 }
 }

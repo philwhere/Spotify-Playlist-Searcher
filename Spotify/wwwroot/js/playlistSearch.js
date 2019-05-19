@@ -2,56 +2,56 @@
 
 
 function Search() {
-    const query = $("#searchbar").val();
-    if (query.length > 0) {
-        const playlistMatches = GlobalPlaylists
-            .filter(p => p.songs.items
-                .find(s => GetMatch(s.track, query)));
-        ShowResults(playlistMatches, query);
-        ListenForRemoveClicks();
+    const query = $('#searchbar').val().trim();
+    if (_.isEmpty(query))
+        return;
+    const playlistMatches = GetPlaylistMatches(query);
+    ShowResults(playlistMatches);
+    ListenForRemoveClicks();
+}
+
+function GetPlaylistMatches(query) {
+    function ExcludeNonMatchingSongs(playlist) {
+        return Object.assign({}, playlist, {
+            songs: Object.assign({}, playlist.songs, {
+                items: playlist.songs.items.filter(s => GetMatch(s.track, query))
+            })
+        });
     }
+    return GlobalPlaylists
+        .map(playlist => ExcludeNonMatchingSongs(playlist))
+        .filter(p => !_.isEmpty(p.songs.items));
 }
 
-function ShowResults(playlistMatches, query) {
-    $("#tableBody").empty();
-    $(playlistMatches).each((i, playlist) => {
-        const playlistSongs = playlist.songs.items;
-        const songs = playlistSongs.filter(s => GetMatch(s.track, query));
-        const row = ConstructRow(playlist, songs);
-        $("#tableBody").append(row);
-    });
-
+function ShowResults(playlistMatches) {
+    $('#tableBody').empty();
+    for (const playlist of playlistMatches) {
+        const row = ConstructRow(playlist);
+        $('#tableBody').append(row);
+    }
     if (playlistMatches.length > 0)
-        $("#tablePanel").removeClass("hidden");
+        $('#tablePanel').removeClass('hidden');
 }
 
-function ConstructRow(playlist, songs) {
-    let artists = "";
-    let tracks = "";
-    let row = `<tr>
-                        <td class="text-center">${playlist.name}</td>`;
-    $(songs).each((i, song) => {
-        artists += `<p>${song.track.artistsString}</p>`;
-        tracks += `<p class="song" playlistId="${playlist.id}" uri="${song.track.uri}">${song.track.name}</p>`;
-    });
-    row += `    <td>${artists}</td>
-                        <td>${tracks}</td>
-                    </tr>`;
-    return row;
+function ConstructRow(playlist) {
+    const songs = playlist.songs.items;
+    let row = `<tr><td class="text-center">${playlist.name}</td>`;
+    const artists = songs.reduce((prev, song) => `${prev}<p>${song.track.artistsString}</p>`, '');
+    const tracks = songs.reduce((prev, song) => `${prev}<p class="song" playlistId="${playlist.id}" uri="${song.track.uri}">${song.track.name}</p>`, '');
+    return row += `<td>${artists}</td><td>${tracks}</td></tr>`;
 }
 
 function GetMatch(track, query) {
-    if ($("#selectedSearchOption").text().includes("Song"))
+    if ($("#selectedSearchOption").text().includes('Song'))
         return PartialMatch(track.name, query);
 
-    if ($("#selectedSearchOption").text().includes("Artist"))
+    if ($('#selectedSearchOption').text().includes('Artist'))
         return PartialMatch(track.artistsString, query);
 
     return PartialMatch(track.name, query) || PartialMatch(track.artistsString, query);
 }
-
 function PartialMatch(type, query) {
-    return type.toLowerCase().includes(query.toLowerCase().trim());
+    return type.toLowerCase().includes(query.toLowerCase());
 }
 
 
@@ -76,7 +76,7 @@ function RemoveFromServer(callback, playlistId, songUri) {
     }).always(function () {
         HideLoader();
     }).fail(function () {
-        alert("Delete exploded");
+        alert('Delete exploded');
     }).done(function () {
         callback(playlistId, songUri);
     });
@@ -98,7 +98,7 @@ function GetNewAuthByRefreshToken(callback) {
     }).always(function () {
         HideLoader();
     }).fail(function () {
-        alert("Refresh exploded");
+        alert('Refresh exploded');
     }).done(function (response) {
         const expiry = CalculateUnixInMsExpiry(response.expires_in);
         callback(response.access_token, expiry);
@@ -118,9 +118,9 @@ function UpdatePageWithNewAccess(accessToken, expiry) {
 }
 
 function ListenForRemoveClicks() {
-    $(".song").click(function () {
-        const playlistId = $(this).attr("playlistId");
-        const songUri = $(this).attr("uri");
+    $('.song').click(function () {
+        const playlistId = $(this).attr('playlistId');
+        const songUri = $(this).attr('uri');
         TriggerRemoval(playlistId, songUri);
     });
 }
@@ -136,10 +136,10 @@ $(document).ready(function () {
 
     // Listeners
     // ------------------
-    $("#searchbar").keyup(() => Search());
-    $("#searchOptions li").click((e) => {
+    $('#searchbar').keyup(() => Search());
+    $('#searchOptions li').click((e) => {
         const selectedOption = e.currentTarget.innerText;
-        $("#selectedSearchOption").html(`${selectedOption} <span class="caret"></span>`);
+        $('#selectedSearchOption').html(`${selectedOption} <span class="caret"></span>`);
         Search();
     });
     $('#refreshDataButton').click(() => GetNewAuthByRefreshToken(UpdatePageWithNewAccess));
