@@ -73,12 +73,12 @@ function RemoveFromServer(callback, playlistId, songUri) {
         beforeSend: function () {
             ShowLoader();
         }
+    }).always(function () {
+        HideLoader();
     }).fail(function () {
         alert("Delete exploded");
     }).done(function () {
         callback(playlistId, songUri);
-    }).always(function () {
-        HideLoader();
     });
 }
 
@@ -95,25 +95,25 @@ function GetNewAuthByRefreshToken(callback) {
         beforeSend: function () {
             ShowLoader();
         }
+    }).always(function () {
+        HideLoader();
     }).fail(function () {
         alert("Refresh exploded");
-        HideLoader();
     }).done(function (response) {
-        callback(response);
+        const expiry = CalculateUnixInMsExpiry(response.expires_in);
+        callback(response.access_token, expiry);
     });
 }
 
-function UpdateClockAndAccessToken(authResponse) {
-    const expiry = CalculateUnixInMsExpiry(authResponse.expires_in);
+function UpdateClockAndAccessToken(accessToken, expiry) {
     ResetClock('clockdiv', new Date(expiry));
-    GlobalAccesssToken = authResponse.access_token;
-    HideLoader();
+    GlobalAccesssToken = accessToken;
 }
 
-function UpdatePageWithNewAccess(authResponse) {
-    const expiry = CalculateUnixInMsExpiry(authResponse.expires_in);
+function UpdatePageWithNewAccess(accessToken, expiry) {
+    UrlParams.set('access_token', accessToken);
     UrlParams.set('expiry', expiry);
-    UrlParams.set('access_token', authResponse.access_token);
+    ShowLoader();
     window.location.search = UrlParams.toString();
 }
 
