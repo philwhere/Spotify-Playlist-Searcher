@@ -1,4 +1,4 @@
-﻿var GlobalAccesssToken = UrlParams.get('access_token');
+﻿var GlobalAccesssToken = GlobalUrlParams.get('access_token');
 
 
 function Search() {
@@ -90,7 +90,7 @@ function RemoveSongFromLocal(playlistId, songUri) {
 
 function GetNewAuthByRefreshToken(callback) {
     $.ajax({
-        url: `/api/spotify/token?refresh_token=${UrlParams.get('refresh_token')}`,
+        url: `/api/spotify/token?refresh_token=${GlobalUrlParams.get('refresh_token')}`,
         type: 'get',
         beforeSend: function () {
             ShowLoader();
@@ -111,10 +111,10 @@ function UpdateClockAndAccessToken(accessToken, expiry) {
 }
 
 function UpdatePageWithNewAccess(accessToken, expiry) {
-    UrlParams.set('access_token', accessToken);
-    UrlParams.set('expiry', expiry);
+    GlobalUrlParams.set('access_token', accessToken);
+    GlobalUrlParams.set('expiry', expiry);
     ShowLoader();
-    window.location.search = UrlParams.toString();
+    window.location.search = GlobalUrlParams.toString();
 }
 
 function ListenForRemoveClicks() {
@@ -126,7 +126,7 @@ function ListenForRemoveClicks() {
 }
 
 function LoadInitialClock() {
-    const sessionExpiry = parseInt(UrlParams.get('expiry'));
+    const sessionExpiry = parseInt(GlobalUrlParams.get('expiry'));
     InitializeClock('clockdiv', new Date(sessionExpiry));
 }
 

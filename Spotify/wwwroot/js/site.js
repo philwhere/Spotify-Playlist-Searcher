@@ -2,6 +2,9 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // Write your JavaScript code.
+const GlobalUrlParams = new URLSearchParams(window.location.search);
+
+
 function ShowLoader() {
     if ($('#loader').hasClass('hidden'))
         $('#loader').toggleClass('hidden');
@@ -11,8 +14,6 @@ function HideLoader() {
     if (!$('#loader').hasClass('hidden'))
         $('#loader').toggleClass('hidden');
 }
-
-const UrlParams = new URLSearchParams(window.location.search);
 
 function GetHashParams() {
     const params = {};
@@ -26,7 +27,7 @@ function GetHashParams() {
 
 function GetUrlParams() {
     const params = {};
-    for (const param of UrlParams)
+    for (const param of GlobalUrlParams)
         params[param[0]] = param[1];
     return params;
 }
