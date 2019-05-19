@@ -46,10 +46,10 @@
 
     <div class="container body-content">
         @RenderBody()
-        <hr id="footerHr" />
+        @*<hr id="footerHr" />
         <footer>
             <p>&copy; 2018 - Spotify</p>
-        </footer>
+        </footer>*@
     </div>
 
     <environment include="Development">
@@ -72,7 +72,7 @@
         </script>
         <script src="~/js/site.min.js" asp-append-version="true"></script>
     </environment>
-    <script src="~/lib/lodash/lodash.js"></script>
+    <script src="~/lib/lodash/lodash.min.js"></script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

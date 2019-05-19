@@ -80,7 +80,7 @@ namespace Spotify
 
         private IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
         {
-            Random jitterer = new Random();
+            var jitterer = new Random();
             return HttpPolicyExtensions
                 .HandleTransientHttpError()
                 .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests)

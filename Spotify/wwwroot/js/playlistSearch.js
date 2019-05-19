@@ -117,7 +117,7 @@ function ListenForRemoveClicks() {
 $(document).ready(function () {
     var sessionExpiry = parseInt(UrlParams.get('expiry'));
     initializeClock('clockdiv', new Date(sessionExpiry));
-    $('#footerHr').addClass('hidden');
+    //$('#footerHr').addClass('hidden');
 
 
     // Listeners
