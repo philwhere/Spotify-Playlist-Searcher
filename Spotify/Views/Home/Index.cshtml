@@ -24,10 +24,10 @@
     {
     <script>
         $(document).ready(function () {
-            var params = GetAllParams()
+            const params = GetAllParams();
             if (params.access_token) {
                 ShowLoader();
-                var expiry = CalculateUnixInMsExpiry(params.expires_in);
+                const expiry = CalculateUnixInMsExpiry(params.expires_in);
                 window.location = `/home/playlistsearch?access_token=${params.access_token}&expiry=${expiry}`;
             }
             if (params.code) {

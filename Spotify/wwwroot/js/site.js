@@ -15,8 +15,8 @@ function HideLoader() {
 const UrlParams = new URLSearchParams(window.location.search);
 
 function GetHashParams() {
-    var params = {};
-    var e,
+    const params = {};
+    let e,
         r = /([^&;=]+)=?([^&;]*)/g,
         q = window.location.hash.substring(1);
     while (e = r.exec(q))
@@ -25,18 +25,18 @@ function GetHashParams() {
 }
 
 function GetUrlParams() {
-    var params = {};
-    for (let param of UrlParams)
+    const params = {};
+    for (const param of UrlParams)
         params[param[0]] = param[1];
     return params;
 }
 
 function GetAllParams() {
-    var urlParams = GetUrlParams();
-    var hashParams = GetHashParams();
+    const urlParams = GetUrlParams();
+    const hashParams = GetHashParams();
     return Object.assign(urlParams, hashParams);
 }
 
 function CalculateUnixInMsExpiry(expiresInSeconds) {
-    return new Date().valueOf() + expiresInSeconds * 1000;
+    return new Date().valueOf() + expiresInSeconds * 1000 - 1000; //- 1000 to get clock to start at 59:59
 }

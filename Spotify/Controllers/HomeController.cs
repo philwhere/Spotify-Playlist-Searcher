@@ -38,7 +38,7 @@ namespace Spotify.Controllers
         public async Task<IActionResult> AuthCodeRedirect(string code, string redirect_uri)
         {
             var authorization = await _spotifyClient.GetAuthorizationByCode(code, redirect_uri);
-            var expiry = DateTimeOffset.Now.ToUnixTimeMilliseconds() + authorization.expires_in * 1000;
+            var expiry = DateTimeOffset.Now.AddSeconds(-1).ToUnixTimeMilliseconds() + authorization.expires_in * 1000;
             return RedirectToAction("PlaylistSearch", new 
                 { authorization.access_token, expiry, authorization.refresh_token });
         }

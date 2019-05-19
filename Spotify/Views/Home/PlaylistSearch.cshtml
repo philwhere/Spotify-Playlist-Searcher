@@ -15,7 +15,10 @@
         @if (!StringValues.IsNullOrEmpty(Context.Request.Query["refresh_token"]))
         {
             <div class="col-xs-6 text-right ">
-                <div id="refreshButton" class="btn btn-default">Refresh</div>
+                <div id="refreshDataButton" class="btn btn-default spotty-refresh-button">Refresh Data</div>
+            </div>
+            <div class="col-xs-6 text-right">
+                <div id="refreshTokenButton" class="btn btn-default spotty-refresh-button">Refresh Token</div>
             </div>
         }
     </div>
@@ -55,7 +58,7 @@
 
 @section scripts {
     <script>
-        var Playlists = @Html.Raw(Json.Serialize(Model));
+        const GlobalPlaylists = @Html.Raw(Json.Serialize(Model));
     </script>
 
     <environment include="Development">

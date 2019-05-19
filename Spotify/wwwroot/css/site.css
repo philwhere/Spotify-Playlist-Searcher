@@ -35,3 +35,7 @@ body {
         display: none;
     }
 }
+
+.spotty-refresh-button {
+    width: 9em;
+}

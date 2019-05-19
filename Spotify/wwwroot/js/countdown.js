@@ -1,25 +1,28 @@
-﻿function getTimeRemaining(endtime){
-  var t = Date.parse(endtime) - Date.parse(new Date());
-  var seconds = Math.floor( t/1000 % 60 );
-  var minutes = Math.floor( t/1000/60 % 60 );
-  var hours = Math.floor( t/(1000*60*60) % 24 );
-  var days = Math.floor( t/(1000*60*60*24) );
-  return {
-    'total': t,
-    'days': days,
-    'hours': hours,
-    'minutes': minutes,
-    'seconds': seconds
-  };
+﻿var GlobalCounting;
+
+
+function GetTimeRemaining(endtime) {
+    const t = Date.parse(endtime) - Date.parse(new Date());
+    const seconds = Math.floor(t / 1000 % 60);
+    const minutes = Math.floor(t / 1000 / 60 % 60);
+    const hours = Math.floor(t / (1000 * 60 * 60) % 24);
+    const days = Math.floor(t / (1000 * 60 * 60 * 24));
+    return {
+        'total': t,
+        'days': days,
+        'hours': hours,
+        'minutes': minutes,
+        'seconds': seconds
+    };
 }
 
-function initializeClock(id, endtime) {
-    var clock = document.getElementById(id);
-    var minutesSpan = clock.querySelector('.minutes');
-    var secondsSpan = clock.querySelector('.seconds');
+function InitializeClock(id, endTime) {
+    const clock = document.getElementById(id);
+    const minutesSpan = clock.querySelector('.minutes');
+    const secondsSpan = clock.querySelector('.seconds');
 
-    function updateClock() {
-        var t = getTimeRemaining(endtime);
+    function UpdateClock() {
+        const t = GetTimeRemaining(endTime);
         minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
         secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
         if (t.total <= 0) {
@@ -27,7 +30,11 @@ function initializeClock(id, endtime) {
             secondsSpan.innerHTML = '00';
         }
     }
-    updateClock(); // run function once at first to avoid delay
-    setInterval(updateClock, 1000);
+    UpdateClock(); // run function once at first to avoid delay
+    GlobalCounting = setInterval(UpdateClock, 1000);
 }
 
+function ResetClock(id, endTime) {
+    clearInterval(GlobalCounting);
+    InitializeClock(id, endTime);
+}

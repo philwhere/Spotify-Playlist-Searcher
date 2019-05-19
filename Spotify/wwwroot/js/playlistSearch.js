@@ -1,7 +1,10 @@
-﻿function Search() {
-    var query = $("#searchbar").val();
+﻿var GlobalAccesssToken = UrlParams.get('access_token');
+
+
+function Search() {
+    const query = $("#searchbar").val();
     if (query.length > 0) {
-        var playlistMatches = Playlists
+        const playlistMatches = GlobalPlaylists
             .filter(p => p.songs.items
                 .find(s => GetMatch(s.track, query)));
         ShowResults(playlistMatches, query);
@@ -12,9 +15,9 @@
 function ShowResults(playlistMatches, query) {
     $("#tableBody").empty();
     $(playlistMatches).each((i, playlist) => {
-        var playlistSongs = playlist.songs.items;
-        var songs = playlistSongs.filter(s => GetMatch(s.track, query));
-        var row = ConstructRow(playlist, songs);
+        const playlistSongs = playlist.songs.items;
+        const songs = playlistSongs.filter(s => GetMatch(s.track, query));
+        const row = ConstructRow(playlist, songs);
         $("#tableBody").append(row);
     });
 
@@ -23,9 +26,9 @@ function ShowResults(playlistMatches, query) {
 }
 
 function ConstructRow(playlist, songs) {
-    var artists = "";
-    var tracks = "";
-    var row = `<tr>
+    let artists = "";
+    let tracks = "";
+    let row = `<tr>
                         <td class="text-center">${playlist.name}</td>`;
     $(songs).each((i, song) => {
         artists += `<p>${song.track.artistsString}</p>`;
@@ -53,9 +56,9 @@ function PartialMatch(type, query) {
 
 
 function TriggerRemoval(playlistId, songUri) {
-    var playlist = Playlists.find(p => p.id === playlistId);
-    var track = playlist.songs.items.find(s => s.track.uri === songUri).track;
-    var confirmed = confirm(`Do you want to remove track "${track.name}" by "${track.artistsString}" from playlist "${playlist.name}"?`);
+    const playlist = GlobalPlaylists.find(p => p.id === playlistId);
+    const track = playlist.songs.items.find(s => s.track.uri === songUri).track;
+    const confirmed = confirm(`Do you want to remove "${track.name}" by "${track.artistsString}" from "${playlist.name}"?`);
     if (confirmed)
         RemoveFromServer(RemoveSongFromLocal, playlistId, songUri);
 }
@@ -65,11 +68,13 @@ function RemoveFromServer(callback, playlistId, songUri) {
         url: `/api/spotify/playlists/${playlistId}/tracks/${songUri}`,
         type: 'delete',
         headers: {
-            'Authorization': `Bearer ${UrlParams.get('access_token')}`
+            'Authorization': `Bearer ${GlobalAccesssToken}`
         },
         beforeSend: function () {
             ShowLoader();
         }
+    }).fail(function () {
+        alert("Delete exploded");
     }).done(function () {
         callback(playlistId, songUri);
     }).always(function () {
@@ -78,28 +83,35 @@ function RemoveFromServer(callback, playlistId, songUri) {
 }
 
 function RemoveSongFromLocal(playlistId, songUri) {
-    var playlistIndex = Playlists.findIndex(p => p.id === playlistId);
-    _.remove(Playlists[playlistIndex].songs.items, s => s.track.uri === songUri);
+    const playlistIndex = GlobalPlaylists.findIndex(p => p.id === playlistId);
+    _.remove(GlobalPlaylists[playlistIndex].songs.items, s => s.track.uri === songUri);
     Search();
 }
 
-function GetNewAuthByRefreshToken() {
+function GetNewAuthByRefreshToken(callback) {
     $.ajax({
         url: `/api/spotify/token?refresh_token=${UrlParams.get('refresh_token')}`,
         type: 'get',
         beforeSend: function () {
             ShowLoader();
         }
-    }).done(function (response) {
-        UpdateQueryParams(response);
     }).fail(function () {
         alert("Refresh exploded");
         HideLoader();
+    }).done(function (response) {
+        callback(response);
     });
 }
 
-function UpdateQueryParams(authResponse) {
-    var expiry = CalculateUnixInMsExpiry(authResponse.expires_in);
+function UpdateClockAndAccessToken(authResponse) {
+    const expiry = CalculateUnixInMsExpiry(authResponse.expires_in);
+    ResetClock('clockdiv', new Date(expiry));
+    GlobalAccesssToken = authResponse.access_token;
+    HideLoader();
+}
+
+function UpdatePageWithNewAccess(authResponse) {
+    const expiry = CalculateUnixInMsExpiry(authResponse.expires_in);
     UrlParams.set('expiry', expiry);
     UrlParams.set('access_token', authResponse.access_token);
     window.location.search = UrlParams.toString();
@@ -107,28 +119,29 @@ function UpdateQueryParams(authResponse) {
 
 function ListenForRemoveClicks() {
     $(".song").click(function () {
-        var playlistId = $(this).attr("playlistId");
-        var songUri = $(this).attr("uri");
+        const playlistId = $(this).attr("playlistId");
+        const songUri = $(this).attr("uri");
         TriggerRemoval(playlistId, songUri);
     });
 }
 
+function LoadInitialClock() {
+    const sessionExpiry = parseInt(UrlParams.get('expiry'));
+    InitializeClock('clockdiv', new Date(sessionExpiry));
+}
 
 $(document).ready(function () {
-    var sessionExpiry = parseInt(UrlParams.get('expiry'));
-    initializeClock('clockdiv', new Date(sessionExpiry));
-    //$('#footerHr').addClass('hidden');
+    LoadInitialClock();
 
 
     // Listeners
     // ------------------
     $("#searchbar").keyup(() => Search());
-
     $("#searchOptions li").click((e) => {
-        var selectedOption = e.currentTarget.innerText;
+        const selectedOption = e.currentTarget.innerText;
         $("#selectedSearchOption").html(`${selectedOption} <span class="caret"></span>`);
         Search();
     });
-
-    $('#refreshButton').click(() => GetNewAuthByRefreshToken());
+    $('#refreshDataButton').click(() => GetNewAuthByRefreshToken(UpdatePageWithNewAccess));
+    $('#refreshTokenButton').click(() => GetNewAuthByRefreshToken(UpdateClockAndAccessToken));
 });
