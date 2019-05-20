@@ -39,6 +39,7 @@ function ConstructRow(playlist) {
     const artists = songs.reduce((prev, song) => `${prev}<p>${song.track.artistsString}</p>`, '');
     const tracks = songs.reduce((prev, song) => `${prev}<p class="song" playlistId="${playlist.id}" uri="${song.track.uri}">${song.track.name}</p>`, '');
     return row += `<td>${artists}</td><td>${tracks}</td></tr>`;
+    //return songs.reduce((prev, song) => `${prev}<tr playlistId="${playlist.id}" uri="${song.track.uri}"><td class="text-center">${playlist.name}</td><td><p>${song.track.artistsString}</p></td><td><div class="song" playlistId="${playlist.id}" uri="${song.track.uri}">${song.track.name}</div></td></tr>`, '');
 }
 
 function GetMatch(track, query) {

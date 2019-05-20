@@ -18,17 +18,15 @@ function GetTimeRemaining(endtime) {
 
 function InitializeClock(id, endTime) {
     const clock = document.getElementById(id);
-    const minutesSpan = clock.querySelector('.minutes');
-    const secondsSpan = clock.querySelector('.seconds');
-
+    const countdownDisplaySpan = clock.querySelector('.countdownDisplay');
     function UpdateClock() {
         const t = GetTimeRemaining(endTime);
-        minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
-        secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
-        if (t.total <= 0) {
-            minutesSpan.innerHTML = '00';
-            secondsSpan.innerHTML = '00';
-        }
+        const minutes = ('0' + t.minutes).slice(-2);
+        const seconds = ('0' + t.seconds).slice(-2);
+        countdownDisplaySpan.innerHTML = `${minutes}:${seconds}`;
+
+        if (t.total <= 0)
+            countdownDisplaySpan.innerHTML = '00:00';
     }
     UpdateClock(); // run function once at first to avoid delay
     GlobalCounting = setInterval(UpdateClock, 1000);
