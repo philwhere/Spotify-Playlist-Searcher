@@ -43,6 +43,9 @@ function ConstructRow(playlist) {
 }
 
 function GetMatch(track, query) {
+    if (!track)
+        return false;
+
     if ($("#selectedSearchOption").text().includes('Song'))
         return PartialMatch(track.name, query);
 
