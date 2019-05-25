@@ -7,6 +7,7 @@ function Search() {
         return;
     const playlistMatches = GetPlaylistMatches(query);
     ShowResults(playlistMatches);
+    ShowNewLayout(playlistMatches);
     ListenForRemoveClicks();
 }
 
@@ -25,21 +26,30 @@ function GetPlaylistMatches(query) {
 
 function ShowResults(playlistMatches) {
     $('#tableBody').empty();
-    for (const playlist of playlistMatches) {
-        const row = ConstructRow(playlist);
-        $('#tableBody').append(row);
-    }
-    if (playlistMatches.length > 0)
-        $('#tablePanel').removeClass('hidden');
+    var html = playlistMatches.reduce((prev, playlist) => `${prev}${BuildOldPlaylistHtml(playlist)}`, '');
+    $('#tableBody').append(html);
 }
 
-function ConstructRow(playlist) {
+function ShowNewLayout(playlistMatches) {
+    $('#resultsContainer').empty();
+    var html = playlistMatches.reduce((prev, playlist) => `${prev}${BuildNewPlaylistHtml(playlist)}`, '');
+    $('#resultsContainer').append(html);
+}
+
+function BuildNewPlaylistHtml(playlist) {
+    const songs = playlist.songs.items;
+    let playlistHeading = `<div class="row playlist-section"><div class="col-xs-12">${playlist.name}</div></div><hr class="playlist-separator" />`;
+    let playlistSongsHtml = songs.reduce((prev, song) => `${prev}<div class="song" playlistId="${playlist.id}" uri="${song.track.uri}"><p class="artist-name">${song.track.artistsString}</p><p class="song-name">${song.track.name}</p></div>`, '');
+    let songsSection = `<div class="row"><div class="col-xs-12 text-right">${playlistSongsHtml}</div></div>`;
+    return playlistHeading += songsSection;
+}
+
+function BuildOldPlaylistHtml(playlist) {
     const songs = playlist.songs.items;
     let row = `<tr><td class="text-center">${playlist.name}</td>`;
     const artists = songs.reduce((prev, song) => `${prev}<p>${song.track.artistsString}</p>`, '');
     const tracks = songs.reduce((prev, song) => `${prev}<p class="song" playlistId="${playlist.id}" uri="${song.track.uri}">${song.track.name}</p>`, '');
     return row += `<td>${artists}</td><td>${tracks}</td></tr>`;
-    //return songs.reduce((prev, song) => `${prev}<tr playlistId="${playlist.id}" uri="${song.track.uri}"><td class="text-center">${playlist.name}</td><td><p>${song.track.artistsString}</p></td><td><div class="song" playlistId="${playlist.id}" uri="${song.track.uri}">${song.track.name}</div></td></tr>`, '');
 }
 
 function GetMatch(track, query) {
@@ -134,6 +144,10 @@ function LoadInitialClock() {
     InitializeClock('clockdiv', new Date(sessionExpiry));
 }
 
+function SwitchViews() {
+    $('#resultsContainer,#tablePanel').toggleClass('hidden');
+}
+
 $(document).ready(function () {
     LoadInitialClock();
 
@@ -148,4 +162,5 @@ $(document).ready(function () {
     });
     $('#refreshDataButton').click(() => GetNewAuthByRefreshToken(UpdatePageWithNewAccess));
     $('#refreshTokenButton').click(() => GetNewAuthByRefreshToken(UpdateClockAndAccessToken));
+    $('#secretViewSwitch').click(() => SwitchViews());
 });

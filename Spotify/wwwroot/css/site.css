@@ -39,3 +39,35 @@ body {
 .spotty-refresh-button {
     width: 9em;
 }
+
+.artist-name {
+    margin-bottom: -5px;
+    font-size: smaller;
+}
+
+.playlist-section {
+    padding-top: 15px;
+}
+
+    .playlist-section > div {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: x-large;
+    }
+
+.song-name {
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: medium;
+    text-overflow: ellipsis;
+}
+
+.playlist-separator {
+    margin-top: 0;
+}
+
+.song:hover, .song:active, .song:focus {
+    background: rgba(29, 185, 84, 0.6);
+    cursor: pointer;
+}
