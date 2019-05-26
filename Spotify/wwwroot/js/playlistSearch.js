@@ -1,13 +1,12 @@
 ﻿var GlobalAccesssToken = GlobalUrlParams.get('access_token');
-
+var GlobalUseNewView = true;
 
 function Search() {
     const query = $('#searchbar').val().trim();
-    if (_.isEmpty(query))
+    if (query.length < 2)
         return;
     const playlistMatches = GetPlaylistMatches(query);
-    ShowResults(playlistMatches);
-    ShowNewLayout(playlistMatches);
+    GlobalUseNewView ? ShowNewLayout(playlistMatches) : ShowTableLayout(playlistMatches);
     ListenForRemoveClicks();
 }
 
@@ -24,9 +23,9 @@ function GetPlaylistMatches(query) {
         .filter(p => !_.isEmpty(p.songs.items));
 }
 
-function ShowResults(playlistMatches) {
+function ShowTableLayout(playlistMatches) {
     $('#tableBody').empty();
-    var html = playlistMatches.reduce((prev, playlist) => `${prev}${BuildOldPlaylistHtml(playlist)}`, '');
+    var html = playlistMatches.reduce((prev, playlist) => `${prev}${BuildTablePlaylistHtml(playlist)}`, '');
     $('#tableBody').append(html);
 }
 
@@ -38,13 +37,13 @@ function ShowNewLayout(playlistMatches) {
 
 function BuildNewPlaylistHtml(playlist) {
     const songs = playlist.songs.items;
-    let playlistHeading = `<div class="row playlist-section"><div class="col-xs-12">${playlist.name}</div></div><hr class="playlist-separator" />`;
-    let playlistSongsHtml = songs.reduce((prev, song) => `${prev}<div class="song" playlistId="${playlist.id}" uri="${song.track.uri}"><p class="artist-name">${song.track.artistsString}</p><p class="song-name">${song.track.name}</p></div>`, '');
-    let songsSection = `<div class="row"><div class="col-xs-12 text-right">${playlistSongsHtml}</div></div>`;
-    return playlistHeading += songsSection;
+    let playlistSection = `<div class="row playlist-section"><div class="col-xs-12 text-left"><h3>${playlist.name}</h3></div></div><hr class="playlist-separator" />`;
+    let playlistSongsHtml = songs.reduce((prev, song) => `${prev}<div class="song" playlistId="${playlist.id}" uri="${song.track.uri}"><p class="song-name">${song.track.name}</p><p class="artist-name">${song.track.artistsString}</p></div>`, '');
+    let songsSection = `<div class="row"><div class="col-xs-12 text-left">${playlistSongsHtml}</div></div>`;
+    return playlistSection += songsSection;
 }
 
-function BuildOldPlaylistHtml(playlist) {
+function BuildTablePlaylistHtml(playlist) {
     const songs = playlist.songs.items;
     let row = `<tr><td class="text-center">${playlist.name}</td>`;
     const artists = songs.reduce((prev, song) => `${prev}<p>${song.track.artistsString}</p>`, '');
@@ -146,6 +145,8 @@ function LoadInitialClock() {
 
 function SwitchViews() {
     $('#resultsContainer,#tablePanel').toggleClass('hidden');
+    GlobalUseNewView = !GlobalUseNewView;
+    Search();
 }
 
 $(document).ready(function () {

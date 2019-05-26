@@ -41,19 +41,18 @@ body {
 }
 
 .artist-name {
-    margin-bottom: -5px;
+    margin-top: -13px;
     font-size: smaller;
+    color: slategrey;
 }
 
 .playlist-section {
-    padding-top: 15px;
 }
 
-    .playlist-section > div {
+    .playlist-section h3 {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        font-size: x-large;
     }
 
 .song-name {
@@ -65,6 +64,9 @@ body {
 
 .playlist-separator {
     margin-top: 0;
+    margin-bottom: 13px;
+    width: 64%;
+    float: left;
 }
 
 .song:hover, .song:active, .song:focus {
