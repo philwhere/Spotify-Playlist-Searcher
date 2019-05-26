@@ -1,12 +1,13 @@
 ﻿var GlobalAccesssToken = GlobalUrlParams.get('access_token');
-var GlobalUseNewView = true;
+var GlobalUseMobileView;
+var GlobalSelectedSearchOption = 'All';
 
 function Search() {
     const query = $('#searchbar').val().trim();
-    if (query.length < 2)
+    if (query.length < 3)
         return;
     const playlistMatches = GetPlaylistMatches(query);
-    GlobalUseNewView ? ShowNewLayout(playlistMatches) : ShowTableLayout(playlistMatches);
+    GlobalUseMobileView ? DisplayMobileResults(playlistMatches) : DisplayTableResults(playlistMatches);
     ListenForRemoveClicks();
 }
 
@@ -23,16 +24,19 @@ function GetPlaylistMatches(query) {
         .filter(p => !_.isEmpty(p.songs.items));
 }
 
-function ShowTableLayout(playlistMatches) {
+function DisplayTableResults(playlistMatches) {
     $('#tableBody').empty();
     var html = playlistMatches.reduce((prev, playlist) => `${prev}${BuildTablePlaylistHtml(playlist)}`, '');
     $('#tableBody').append(html);
+    _.isEmpty(playlistMatches)
+        ? $('#tablePanel').addClass('hidden')
+        : $('#tablePanel').removeClass('hidden');
 }
 
-function ShowNewLayout(playlistMatches) {
+function DisplayMobileResults(playlistMatches) {
     $('#resultsContainer').empty();
     var html = playlistMatches.reduce((prev, playlist) => `${prev}${BuildNewPlaylistHtml(playlist)}`, '');
-    $('#resultsContainer').append(html);
+    $('#resultsContainer').removeClass('hidden').append(html);
 }
 
 function BuildNewPlaylistHtml(playlist) {
@@ -54,19 +58,16 @@ function BuildTablePlaylistHtml(playlist) {
 function GetMatch(track, query) {
     if (!track)
         return false;
-
-    if ($("#selectedSearchOption").text().includes('Song'))
+    if (GlobalSelectedSearchOption === 'Song')
         return PartialMatch(track.name, query);
-
-    if ($('#selectedSearchOption').text().includes('Artist'))
+    if (GlobalSelectedSearchOption === 'Artist')
         return PartialMatch(track.artistsString, query);
-
     return PartialMatch(track.name, query) || PartialMatch(track.artistsString, query);
 }
+
 function PartialMatch(type, query) {
     return type.toLowerCase().includes(query.toLowerCase());
 }
-
 
 function TriggerRemoval(playlistId, songUri) {
     const playlist = GlobalPlaylists.find(p => p.id === playlistId);
@@ -145,23 +146,34 @@ function LoadInitialClock() {
 
 function SwitchViews() {
     $('#resultsContainer,#tablePanel').toggleClass('hidden');
-    GlobalUseNewView = !GlobalUseNewView;
+    GlobalUseMobileView = !GlobalUseMobileView;
+    Search();
+}
+
+function SetViewType() {
+    GlobalUseMobileView = $(window).width() < 768;
+    GlobalUseMobileView
+        ? $('#tablePanel').addClass('hidden')
+        : $('#resultsContainer').addClass('hidden');
+    Search();
+}
+
+function UpdateSearchOption(option) {
+    GlobalSelectedSearchOption = option.trim();
+    $('#selectedSearchOption').html(`${option} <span class="caret"></span>`);
     Search();
 }
 
 $(document).ready(function () {
     LoadInitialClock();
-
+    SetViewType();
 
     // Listeners
     // ------------------
     $('#searchbar').keyup(() => Search());
-    $('#searchOptions li').click((e) => {
-        const selectedOption = e.currentTarget.innerText;
-        $('#selectedSearchOption').html(`${selectedOption} <span class="caret"></span>`);
-        Search();
-    });
+    $('#searchOptions li').click((e) => UpdateSearchOption(e.currentTarget.innerText));
     $('#refreshDataButton').click(() => GetNewAuthByRefreshToken(UpdatePageWithNewAccess));
     $('#refreshTokenButton').click(() => GetNewAuthByRefreshToken(UpdateClockAndAccessToken));
     $('#secretViewSwitch').click(() => SwitchViews());
+    $(window).resize(() => SetViewType());
 });
