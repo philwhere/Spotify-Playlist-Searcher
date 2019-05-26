@@ -55,7 +55,7 @@ namespace Spotify.Controllers
                 return RedirectToAction("Index");
             try
             {
-                var playlists = (await _spotifyClient.GetPlaylistsWithSongs(access_token)).items;
+                var playlists = (await _spotifyClient.GetMyPlaylistsWithSongs(access_token));
                 //var playlists = this.GetEmbeddedResourceJsonAs<List<PlaylistItem>>("DataDump.json");
                 return View(playlists);
             }

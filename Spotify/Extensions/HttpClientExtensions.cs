@@ -22,7 +22,7 @@ namespace Spotify.Extensions
             return await SendWithToken<T>(httpClient, url, HttpMethod.Post, accessToken, content);
         }
 
-        public static async Task<T> PostForm<T>(this HttpClient httpClient,
+        public static async Task<T> PostFormWithToken<T>(this HttpClient httpClient,
             string url, object payload, string accessToken = null)
         {
             var content = CreateFormContent(payload);

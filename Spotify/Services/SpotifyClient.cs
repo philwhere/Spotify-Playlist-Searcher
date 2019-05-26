@@ -23,11 +23,18 @@ namespace Spotify.Services
             _httpClient.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
         }
-
-        public async Task<SpotifyItemResponse<PlaylistItem>> GetPlaylistsWithSongs(string accessToken)
+        
+        public async Task<List<PlaylistItem>> GetMyPlaylistsWithSongs(string accessToken)
         {
             var playlists = await GetMyPlaylists(accessToken);
-            await PopulateSongsForPlaylists(playlists.items, accessToken);
+            await PopulateSongsForPlaylists(playlists, accessToken);
+            return playlists;
+        }
+
+        public async Task<List<PlaylistItem>> GetAllPlaylistsWithSongs(string accessToken)
+        {
+            var playlists = await GetAllPlaylists(accessToken);
+            await PopulateSongsForPlaylists(playlists, accessToken);
             return playlists;
         }
 
@@ -43,7 +50,7 @@ namespace Spotify.Services
             var url = $"https://accounts.spotify.com/api/token";
             var payload = new AuthorizationTokenPayload(authorizationCode, redirectUri, 
                 _configuration.ClientId, _configuration.ClientSecret);
-            var response = await _httpClient.PostForm<AuthorizationCodeResult>(url, payload);
+            var response = await _httpClient.PostFormWithToken<AuthorizationCodeResult>(url, payload);
             return response;
         }
 
@@ -52,16 +59,30 @@ namespace Spotify.Services
             var url = $"https://accounts.spotify.com/api/token";
             var payload = new RefreshTokenPayload(refreshToken, 
                 _configuration.ClientId, _configuration.ClientSecret);
-            var response = await _httpClient.PostForm<RefreshTokenResult>(url, payload);
+            var response = await _httpClient.PostFormWithToken<RefreshTokenResult>(url, payload);
+            return response;
+        }
+
+        public async Task<Profile> GetProfile(string accessToken)
+        {
+            var url = "https://api.spotify.com/v1/me";
+            var response = await _httpClient.GetWithToken<Profile>(url, accessToken);
             return response;
         }
 
 
-        private async Task<SpotifyItemResponse<PlaylistItem>> GetMyPlaylists(string accessToken)
+        private async Task<List<PlaylistItem>> GetMyPlaylists(string accessToken)
+        {
+            var profile = await GetProfile(accessToken);
+            var allPlaylists = await GetAllPlaylists(accessToken);
+            return allPlaylists.FindAll(p => p.owner.id == profile.id);
+        }
+
+        private async Task<List<PlaylistItem>> GetAllPlaylists(string accessToken)
         {
             var url = "https://api.spotify.com/v1/me/playlists?limit=50";
             var playlists = await GetAllPages<PlaylistItem>(url, accessToken);
-            return playlists;
+            return playlists.items;
         }
 
         private async Task AddSongsToPlaylist(PlaylistItem playlist, string accessToken)
@@ -71,7 +92,7 @@ namespace Spotify.Services
             playlist.songs = songs;
         }
 
-        private async Task PopulateSongsForPlaylists(IEnumerable<PlaylistItem> playlists, string accessToken)
+        private async Task PopulateSongsForPlaylists(List<PlaylistItem> playlists, string accessToken)
         {
             var songPopulationTasks = new List<Task>();
             foreach (var playlist in playlists)

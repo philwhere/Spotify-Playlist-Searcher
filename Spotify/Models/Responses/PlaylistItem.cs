@@ -6,6 +6,7 @@ namespace Spotify.Models.Responses
     {
         public string id { get; set; }
         public string name { get; set; }
+        public Owner owner { get; set; }
         public Tracks tracks { get; set; }
         public string type { get; set; }
         public string uri { get; set; }
