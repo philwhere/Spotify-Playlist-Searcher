@@ -9,7 +9,7 @@
 <div>
     <div class="row">
         <div class="col-xs-6">
-            <h4>@($"{DateTime.Now:dd/MM h:mm tt}")</h4>
+            <h4 class="session-text">@($"{DateTime.Now:dd/MM h:mm tt}")</h4>
         </div>
         <div class="col-xs-6 text-right ">
             <div id="refreshDataButton" class="btn spotty-button">Refresh Data</div>
@@ -17,7 +17,7 @@
     </div>
     <div class="row">
         <div id="clockdiv" class="col-xs-6">
-            <h4>Session: <span class="countdownDisplay"></span></h4>
+            <h4 class="session-text">Session: <span class="countdownDisplay"></span></h4>
         </div>
         <div class="col-xs-6 text-right">
             <div id="refreshTokenButton" class="btn spotty-button">Refresh Session</div>
@@ -47,9 +47,9 @@
             <table class="table table-bordered">
                 <thead>
                     <tr>
-                        <th class="text-center">Playlist</th>
-                        <th>Artist</th>
-                        <th>Track</th>
+                        <th style="width: 25%;" class="text-center">Playlist</th>
+                        <th style="width: 35%;">Artist</th>
+                        <th style="width: 40%;">Track</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>

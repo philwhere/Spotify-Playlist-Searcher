@@ -10,8 +10,18 @@ body {
 
 /*Override*/
 .navbar-inverse {
-    background-color: transparent;
-    border-color: transparent;
+    background-color: #191414;
+    /*border-color: transparent;*/
+}
+
+table {
+    table-layout: fixed;
+}
+
+td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #tablePanel {
@@ -112,7 +122,7 @@ body {
     }
 
 .spotty-button {
-    width: 13em;
+    width: 10em;
     display: inline-block;
     border-radius: 30px;
     border-color: white;
@@ -158,4 +168,8 @@ body {
 .song:hover, .song:active, .song:focus {
     background: rgba(29, 185, 84, 0.6);
     cursor: pointer;
+}
+
+.session-text {
+    font-size: 17px;
 }
