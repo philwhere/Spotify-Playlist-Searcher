@@ -3,6 +3,19 @@ for details on configuring this project to bundle and minify static web assets. 
 body {
     padding-top: 50px;
     padding-bottom: 20px;
+    font-family: Circular;
+    font-weight: 400;
+    color: white;
+}
+
+/*Override*/
+.navbar-inverse {
+    background-color: transparent;
+    border-color: transparent;
+}
+
+#tablePanel {
+    background-color: transparent;
 }
 
 /* Wrapping element */
@@ -36,23 +49,96 @@ body {
     }
 }
 
-.spotty-refresh-button {
-    width: 9em;
+/*Fonts*/
+@font-face {
+    font-family: Circular;
+    src: url('/fonts/c-light.woff2') format('woff2');
+    font-weight: 300;
+    font-style: normal;
 }
+
+@font-face {
+    font-family: Circular;
+    src: url('/fonts/c-book.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: Circular;
+    src: url('/fonts/c-medium.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: Circular;
+    src: url('/fonts/c-bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: Circular;
+    src: url('/fonts/c-black.woff2') format('woff2');
+    font-weight: 900;
+    font-style: normal;
+}
+
+.spotty-background {
+    width: 100%;
+    height: 100vh;
+    background-size: cover;
+    background-repeat: no-repeat;
+    left: 0;
+    top: 0;
+    position: fixed;
+    will-change: transform;
+    opacity: 1;
+    -webkit-transition: opacity .25s;
+    transition: opacity .25s;
+    background-image: linear-gradient(to right bottom, rgb(56, 67, 98), rgb(0, 0, 0)), linear-gradient(transparent, rgb(0, 0, 0) 70%);
+    z-index: -500;
+}
+
+.spotty-title {
+    font-size: 48px;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 1.15;
+}
+    .spotty-title:hover, spotty-title:focus {
+        color: #1DB954;
+    }
+
+.spotty-button {
+    width: 13em;
+    display: inline-block;
+    border-radius: 30px;
+    border-color: white;
+    padding-top: 5px;
+}
+    .spotty-button:hover, .spotty-button:focus {
+        color: white;
+        font-weight: bold;
+    }
 
 .artist-name {
     margin-top: -13px;
     font-size: smaller;
-    color: grey;
+    color: #a5a5a5;
 }
 
 .playlist-section {
 }
-
     .playlist-section h3 {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        font-size: 28px;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
     }
 
 .song-name {

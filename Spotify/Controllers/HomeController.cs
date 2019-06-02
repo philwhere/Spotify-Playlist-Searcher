@@ -31,7 +31,6 @@ namespace Spotify.Controllers
 
         public IActionResult About()
         {
-            ViewData["Message"] = "Your application description page.";
             return View();
         }
 
@@ -45,7 +44,6 @@ namespace Spotify.Controllers
 
         public IActionResult Contact()
         {
-            ViewData["Message"] = "Your contact page.";
             return View();
         }
 

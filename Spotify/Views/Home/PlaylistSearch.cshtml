@@ -4,7 +4,7 @@
 @{
     ViewData["Title"] = "Playlist Search";
 }
-<h2 id="secretViewSwitch">Playlist Search</h2>
+<h2 id="secretViewSwitch" class="spotty-title">Playlist Search</h2>
 
 <div>
     <div class="row">
@@ -12,7 +12,7 @@
             <h4>@($"{DateTime.Now:dd/MM h:mm tt}")</h4>
         </div>
         <div class="col-xs-6 text-right ">
-            <div id="refreshDataButton" class="btn btn-default spotty-refresh-button">Refresh Data</div>
+            <div id="refreshDataButton" class="btn spotty-button">Refresh Data</div>
         </div>
     </div>
     <div class="row">
@@ -20,7 +20,7 @@
             <h4>Session: <span class="countdownDisplay"></span></h4>
         </div>
         <div class="col-xs-6 text-right">
-            <div id="refreshTokenButton" class="btn btn-default spotty-refresh-button">Refresh Session</div>
+            <div id="refreshTokenButton" class="btn spotty-button">Refresh Session</div>
         </div>
     </div>
     <hr />

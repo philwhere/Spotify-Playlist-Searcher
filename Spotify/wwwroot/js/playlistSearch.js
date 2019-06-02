@@ -49,10 +49,12 @@ function BuildNewPlaylistHtml(playlist) {
 
 function BuildTablePlaylistHtml(playlist) {
     const songs = playlist.songs.items;
-    let row = `<tr><td class="text-center">${playlist.name}</td>`;
-    const artists = songs.reduce((prev, song) => `${prev}<p>${song.track.artistsString}</p>`, '');
-    const tracks = songs.reduce((prev, song) => `${prev}<p class="song" playlistId="${playlist.id}" uri="${song.track.uri}">${song.track.name}</p>`, '');
-    return row += `<td>${artists}</td><td>${tracks}</td></tr>`;
+    //let row = `<tr><td class="text-center">${playlist.name}</td>`;
+    //const artists = songs.reduce((prev, song) => `${prev}<p>${song.track.artistsString}</p>`, '');
+    //const tracks = songs.reduce((prev, song) => `${prev}<p class="song" playlistId="${playlist.id}" uri="${song.track.uri}">${song.track.name}</p>`, '');
+    //return row += `<td>${artists}</td><td>${tracks}</td></tr>`;
+
+    return songs.reduce((prev, song) => `${prev}<tr class="song" playlistId="${playlist.id}" uri="${song.track.uri}"><td class="text-center">${playlist.name}</td><td>${song.track.artistsString}</td><td>${song.track.name}</td></tr>`, '');
 }
 
 function GetMatch(track, query) {
@@ -131,14 +133,6 @@ function RefreshPageWithNewAccess(accessToken, expiry) {
     window.location.search = GlobalUrlParams.toString();
 }
 
-function ListenForRemoveClicks() {
-    $('.song').click(function () {
-        const playlistId = $(this).attr('playlistId');
-        const songUri = $(this).attr('uri');
-        TriggerRemoval(playlistId, songUri);
-    });
-}
-
 function LoadInitialClock() {
     const sessionExpiry = parseInt(GlobalUrlParams.get('expiry'));
     InitializeClock('clockdiv', new Date(sessionExpiry));
@@ -177,3 +171,11 @@ $(document).ready(function () {
     $('#secretViewSwitch').click(() => SwitchViews());
     $(window).resize(() => SetViewType());
 });
+
+function ListenForRemoveClicks() {
+    $('.song').click(function () {
+        const playlistId = $(this).attr('playlistId');
+        const songUri = $(this).attr('uri');
+        TriggerRemoval(playlistId, songUri);
+    });
+}
