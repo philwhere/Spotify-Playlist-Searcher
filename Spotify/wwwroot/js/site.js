@@ -5,9 +5,10 @@
 const GlobalUrlParams = new URLSearchParams(window.location.search);
 
 
-function ShowLoader() {
+function ShowLoader(message) {
     if ($('#loader').hasClass('hidden'))
         $('#loader').toggleClass('hidden');
+    $('#loaderMessage').text(message);
 }
 
 function HideLoader() {

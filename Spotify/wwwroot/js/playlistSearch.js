@@ -85,7 +85,7 @@ function RemoveFromServer(callback, playlistId, songUri) {
             'Authorization': `Bearer ${GlobalAccesssToken}`
         },
         beforeSend: function () {
-            ShowLoader();
+            ShowLoader('Removing song from playlist...');
         }
     }).always(function () {
         HideLoader();
@@ -107,7 +107,7 @@ function GetNewAuthByRefreshToken(callback) {
         url: `/api/spotify/token?refresh_token=${GlobalUrlParams.get('refresh_token')}`,
         type: 'get',
         beforeSend: function () {
-            ShowLoader();
+            ShowLoader('Refreshing session...');
         }
     }).always(function () {
         HideLoader();
@@ -124,10 +124,10 @@ function UpdateClockAndAccessToken(accessToken, expiry) {
     GlobalAccesssToken = accessToken;
 }
 
-function UpdatePageWithNewAccess(accessToken, expiry) {
+function RefreshPageWithNewAccess(accessToken, expiry) {
     GlobalUrlParams.set('access_token', accessToken);
     GlobalUrlParams.set('expiry', expiry);
-    ShowLoader();
+    ShowLoader('Refreshing playlists...');
     window.location.search = GlobalUrlParams.toString();
 }
 
@@ -172,7 +172,7 @@ $(document).ready(function () {
     // ------------------
     $('#searchbar').keyup(() => Search());
     $('#searchOptions li').click((e) => UpdateSearchOption(e.currentTarget.innerText));
-    $('#refreshDataButton').click(() => GetNewAuthByRefreshToken(UpdatePageWithNewAccess));
+    $('#refreshDataButton').click(() => GetNewAuthByRefreshToken(RefreshPageWithNewAccess));
     $('#refreshTokenButton').click(() => GetNewAuthByRefreshToken(UpdateClockAndAccessToken));
     $('#secretViewSwitch').click(() => SwitchViews());
     $(window).resize(() => SetViewType());

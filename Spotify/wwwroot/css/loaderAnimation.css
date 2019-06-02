@@ -78,3 +78,9 @@
         transform: rotate(360deg);
     }
 }
+
+.loader-message {
+    margin-top: 6em;
+    color: white;
+    font-size: large;
+}

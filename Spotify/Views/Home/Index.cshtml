@@ -9,11 +9,11 @@
         $(document).ready(function () {
             const params = GetAllParams();
             if (!params.code) {
-                ShowLoader();
+                ShowLoader('Authorizing...');
                 window.location = 'https://accounts.spotify.com/authorize?client_id=@(ViewBag.ClientId)&redirect_uri=@(GetEncodedRedirectUri())&scope=playlist-read-private%20playlist-modify-public%20playlist-modify-private&response_type=code'
             }
             else {
-                ShowLoader();
+                ShowLoader('Fetching playlists...');
                 window.location = `/home/authcoderedirect?code=${params.code}&redirect_uri=@(GetEncodedRedirectUri())`;
             }
         });
