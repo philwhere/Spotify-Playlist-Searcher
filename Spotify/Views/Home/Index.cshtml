@@ -2,35 +2,17 @@
 @{
     ViewData["Title"] = "Home";
 }
-<div class="row">
-    <div class="col-md-12">
-        <img class="img-responsive" src="~/images/xxx.jpg" />
-    </div>
-    @*<div class="col-md-12 text-center">
-            <h1>GET THAT TOKEN BOY</h1>
-            <a href="https://accounts.spotify.com/authorize?client_id=@(ViewBag.ClientId)&redirect_uri=@(GetEncodedRedirectUri())&scope=playlist-read-private%20playlist-modify-public%20playlist-modify-private&response_type=token">
-                <div class="btn btn-default">Implicit Grant</div>
-            </a>
-        </div>*@
-    <div class="col-md-12 text-center">
-        <h1>GET IT BOY</h1>
-        <a href="https://accounts.spotify.com/authorize?client_id=@(ViewBag.ClientId)&redirect_uri=@(GetEncodedRedirectUri())&scope=playlist-read-private%20playlist-modify-public%20playlist-modify-private&response_type=code">
-            <div class="btn btn-default">Authorization</div>
-        </a>
-    </div>
-</div>
 
 @section Scripts
     {
     <script>
         $(document).ready(function () {
             const params = GetAllParams();
-            if (params.access_token) {
+            if (!params.code) {
                 ShowLoader();
-                const expiry = CalculateUnixInMsExpiry(params.expires_in);
-                window.location = `/home/playlistsearch?access_token=${params.access_token}&expiry=${expiry}`;
+                window.location = 'https://accounts.spotify.com/authorize?client_id=@(ViewBag.ClientId)&redirect_uri=@(GetEncodedRedirectUri())&scope=playlist-read-private%20playlist-modify-public%20playlist-modify-private&response_type=code'
             }
-            if (params.code) {
+            else {
                 ShowLoader();
                 window.location = `/home/authcoderedirect?code=${params.code}&redirect_uri=@(GetEncodedRedirectUri())`;
             }
