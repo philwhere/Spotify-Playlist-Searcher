@@ -139,8 +139,11 @@ function LoadInitialClock() {
 }
 
 function SwitchViews() {
-    $('#resultsContainer,#tablePanel').toggleClass('hidden');
+    GlobalUseMobileView
+        ? $('#resultsContainer').removeClass('hidden')
+        : $('#tablePanel').removeClass('hidden');
     GlobalUseMobileView = !GlobalUseMobileView;
+    $('#resultsContainer,#tablePanel').toggleClass('hidden');
     Search();
 }
 
