@@ -9,9 +9,9 @@ body {
 }
 
 /*Override*/
-.navbar-inverse {
+.navbar-inverse, .navbar-collapse {
     background-color: #191414;
-    /*border-color: transparent;*/
+    border-color: transparent !important;
 }
 
 table {
