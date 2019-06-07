@@ -43,7 +43,7 @@
     position: fixed;
     background: #1DB954;
     z-index: 9999;
-    opacity: 0.75;
+    /*opacity: 0.75;*/
 }
 
 .overlay__inner {
