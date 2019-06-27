@@ -1,8 +1,8 @@
 ﻿var GlobalCounting;
 
 
-function GetTimeRemaining(endtime) {
-    const t = Date.parse(endtime) - Date.parse(new Date());
+function GetTimeRemaining(endTime) {
+    const t = Date.parse(endTime) - Date.parse(new Date());
     const seconds = Math.floor(t / 1000 % 60);
     const minutes = Math.floor(t / 1000 / 60 % 60);
     const hours = Math.floor(t / (1000 * 60 * 60) % 24);
@@ -18,8 +18,8 @@ function GetTimeRemaining(endtime) {
 
 function InitializeClock(id, endTime) {
     const clock = document.getElementById(id);
-    const countdownDisplaySpan = clock.querySelector('.countdownDisplay');
-    function UpdateClock() {
+    const countdownDisplaySpan = clock.querySelector('#countdownDisplay');
+    function updateClock() {
         const t = GetTimeRemaining(endTime);
         const minutes = ('0' + t.minutes).slice(-2);
         const seconds = ('0' + t.seconds).slice(-2);
@@ -28,8 +28,8 @@ function InitializeClock(id, endTime) {
         if (t.total <= 0)
             countdownDisplaySpan.innerHTML = '00:00';
     }
-    UpdateClock(); // run function once at first to avoid delay
-    GlobalCounting = setInterval(UpdateClock, 1000);
+    updateClock(); // run function once at first to avoid delay
+    GlobalCounting = setInterval(updateClock, 1000);
 }
 
 function ResetClock(id, endTime) {

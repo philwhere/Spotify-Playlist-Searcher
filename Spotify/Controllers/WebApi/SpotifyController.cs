@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Spotify.Services.Interfaces;
 
-namespace Spotify.Controllers
+namespace Spotify.Controllers.WebApi
 {
     [Route("api/spotify")]
     [ApiController]
@@ -20,25 +20,25 @@ namespace Spotify.Controllers
         [Route("playlists/{playlistId}/tracks/{trackUri}")]
         public async Task<IActionResult> RemoveTrackFromPlaylist(string playlistId, string trackUri)
         {
-            string token = ExtractBearerToken();
+            var token = ExtractBearerToken();
             await _spotifyClient.RemoveTrackFromPlaylist(playlistId, trackUri, token);
             return new OkResult();
         }
 
         [HttpGet]
         [Route("token")]
-        public async Task<IActionResult> GetTokenByRefresh(string refresh_token)
+        public async Task<IActionResult> GetTokenByRefresh(string refreshToken)
         {
-            var auth = await _spotifyClient.GetTokenByRefresh(refresh_token);
+            var auth = await _spotifyClient.GetTokenByRefresh(refreshToken);
             return new OkObjectResult(auth);
         }
 
 
         private string ExtractBearerToken()
         {
-            var header = Request.Headers["Authorization"].Single();
-            var token = header.Split(' ')[1];
-            return token;
+            var headerValue = Request.Headers["Authorization"].Single();
+            var bearerToken = headerValue.Substring("Bearer ".Length);
+            return bearerToken;
         }
     }
 }

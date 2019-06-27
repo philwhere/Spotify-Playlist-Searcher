@@ -1,9 +1,9 @@
-﻿var GlobalAccesssToken = GlobalUrlParams.get('access_token');
+﻿var GlobalAccessToken = GlobalUrlParams.get('access_token');
 var GlobalUseMobileView;
 var GlobalSelectedSearchOption = 'All';
 
 function Search() {
-    const query = $('#searchbar').val().trim();
+    const query = $('#searchBar').val().trim();
     if (query.length < 3)
         return;
     const playlistMatches = GetPlaylistMatches(query);
@@ -12,7 +12,7 @@ function Search() {
 }
 
 function GetPlaylistMatches(query) {
-    function ExcludeNonMatchingSongs(playlist) {
+    function excludeNonMatchingSongs(playlist) {
         return Object.assign({}, playlist, {
             songs: Object.assign({}, playlist.songs, {
                 items: playlist.songs.items.filter(s => GetMatch(s.track, query))
@@ -20,13 +20,13 @@ function GetPlaylistMatches(query) {
         });
     }
     return GlobalPlaylists
-        .map(playlist => ExcludeNonMatchingSongs(playlist))
+        .map(playlist => excludeNonMatchingSongs(playlist))
         .filter(p => !_.isEmpty(p.songs.items));
 }
 
 function DisplayTableResults(playlistMatches) {
     $('#tableBody').empty();
-    var html = playlistMatches.reduce((prev, playlist) => `${prev}${BuildTablePlaylistHtml(playlist)}`, '');
+    const html = playlistMatches.reduce((prev, playlist) => `${prev}${BuildTablePlaylistHtml(playlist)}`, '');
     $('#tableBody').append(html);
     _.isEmpty(playlistMatches)
         ? $('#tablePanel').addClass('hidden')
@@ -35,15 +35,15 @@ function DisplayTableResults(playlistMatches) {
 
 function DisplayMobileResults(playlistMatches) {
     $('#resultsContainer').empty();
-    var html = playlistMatches.reduce((prev, playlist) => `${prev}${BuildNewPlaylistHtml(playlist)}`, '');
+    const html = playlistMatches.reduce((prev, playlist) => `${prev}${BuildNewPlaylistHtml(playlist)}`, '');
     $('#resultsContainer').removeClass('hidden').append(html);
 }
 
 function BuildNewPlaylistHtml(playlist) {
     const songs = playlist.songs.items;
     let playlistSection = `<div class="row playlist-section"><div class="col-xs-12 text-left"><h3>${playlist.name}</h3></div></div><hr class="playlist-separator" />`;
-    let playlistSongsHtml = songs.reduce((prev, song) => `${prev}<div class="song" playlistId="${playlist.id}" uri="${song.track.uri}"><p class="song-name">${song.track.name}</p><p class="artist-name">${song.track.artistsString}</p></div>`, '');
-    let songsSection = `<div class="row"><div class="col-xs-12 text-left">${playlistSongsHtml}</div></div>`;
+    const playlistSongsHtml = songs.reduce((prev, song) => `${prev}<div class="song" playlistId="${playlist.id}" uri="${song.track.uri}"><p class="song-name">${song.track.name}</p><p class="artist-name">${song.track.artistsString}</p></div>`, '');
+    const songsSection = `<div class="row"><div class="col-xs-12 text-left">${playlistSongsHtml}</div></div>`;
     return playlistSection += songsSection;
 }
 
@@ -84,7 +84,7 @@ function RemoveFromServer(callback, playlistId, songUri) {
         url: `/api/spotify/playlists/${playlistId}/tracks/${songUri}`,
         type: 'delete',
         headers: {
-            'Authorization': `Bearer ${GlobalAccesssToken}`
+            'Authorization': `Bearer ${GlobalAccessToken}`
         },
         beforeSend: function () {
             ShowLoader('Removing song from playlist...');
@@ -106,7 +106,7 @@ function RemoveSongFromLocal(playlistId, songUri) {
 
 function GetNewAuthByRefreshToken(callback) {
     $.ajax({
-        url: `/api/spotify/token?refresh_token=${GlobalUrlParams.get('refresh_token')}`,
+        url: `/api/spotify/token?refreshToken=${GlobalUrlParams.get('refresh_token')}`,
         type: 'get',
         beforeSend: function () {
             ShowLoader('Refreshing session...');
@@ -122,8 +122,8 @@ function GetNewAuthByRefreshToken(callback) {
 }
 
 function UpdateClockAndAccessToken(accessToken, expiry) {
-    ResetClock('clockdiv', new Date(expiry));
-    GlobalAccesssToken = accessToken;
+    ResetClock('clockDiv', new Date(expiry));
+    GlobalAccessToken = accessToken;
 }
 
 function RefreshPageWithNewAccess(accessToken, expiry) {
@@ -135,7 +135,7 @@ function RefreshPageWithNewAccess(accessToken, expiry) {
 
 function LoadInitialClock() {
     const sessionExpiry = parseInt(GlobalUrlParams.get('expiry'));
-    InitializeClock('clockdiv', new Date(sessionExpiry));
+    InitializeClock('clockDiv', new Date(sessionExpiry));
 }
 
 function SwitchViews() {
@@ -167,7 +167,7 @@ $(document).ready(function () {
 
     // Listeners
     // ------------------
-    $('#searchbar').keyup(() => Search());
+    $('#searchBar').keyup(() => Search());
     $('#searchOptions li').click((e) => UpdateSearchOption(e.currentTarget.innerText));
     $('#refreshDataButton').click(() => GetNewAuthByRefreshToken(RefreshPageWithNewAccess));
     $('#refreshTokenButton').click(() => GetNewAuthByRefreshToken(UpdateClockAndAccessToken));
