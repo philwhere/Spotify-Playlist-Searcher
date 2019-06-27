@@ -7,7 +7,7 @@ function Search() {
     if (query.length < 3)
         return;
     const playlistMatches = GetPlaylistMatches(query);
-    GlobalUseMobileView ? DisplayMobileResults(playlistMatches) : DisplayTableResults(playlistMatches);
+    GlobalUseMobileView ? DisplayMobileResults(playlistMatches) : DisplayDesktopResults(playlistMatches);
     ListenForRemoveClicks();
 }
 
@@ -24,7 +24,7 @@ function GetPlaylistMatches(query) {
         .filter(p => !_.isEmpty(p.songs.items));
 }
 
-function DisplayTableResults(playlistMatches) {
+function DisplayDesktopResults(playlistMatches) {
     $('#tableBody').empty();
     const html = playlistMatches.reduce((prev, playlist) => `${prev}${BuildTablePlaylistHtml(playlist)}`, '');
     $('#tableBody').append(html);
@@ -35,11 +35,11 @@ function DisplayTableResults(playlistMatches) {
 
 function DisplayMobileResults(playlistMatches) {
     $('#resultsContainer').empty();
-    const html = playlistMatches.reduce((prev, playlist) => `${prev}${BuildNewPlaylistHtml(playlist)}`, '');
+    const html = playlistMatches.reduce((prev, playlist) => `${prev}${BuildMobilePlaylistHtml(playlist)}`, '');
     $('#resultsContainer').removeClass('hidden').append(html);
 }
 
-function BuildNewPlaylistHtml(playlist) {
+function BuildMobilePlaylistHtml(playlist) {
     const songs = playlist.songs.items;
     let playlistSection = `<div class="row playlist-section"><div class="col-xs-12 text-left"><h3>${playlist.name}</h3></div></div><hr class="playlist-separator" />`;
     const playlistSongsHtml = songs.reduce((prev, song) => `${prev}<div class="song" playlistId="${playlist.id}" uri="${song.track.uri}"><p class="song-name">${song.track.name}</p><p class="artist-name">${song.track.artistsString}</p></div>`, '');
