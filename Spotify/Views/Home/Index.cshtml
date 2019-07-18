@@ -10,7 +10,7 @@
             const params = GetUrlParams();
             if (!params.code) {
                 ShowLoader('Authorizing...');
-                window.location = 'https://accounts.spotify.com/authorize?client_id=@(ViewBag.ClientId)&redirect_uri=@(GetEncodedRedirectUri())&scope=playlist-read-private%20playlist-modify-public%20playlist-modify-private&response_type=code';
+                window.location = 'https://accounts.spotify.com/authorize?client_id=@(ViewBag.ClientId)&redirect_uri=@(GetEncodedRedirectUri())&scope=playlist-read-private%20playlist-modify-public%20playlist-modify-private%20user-library-read&response_type=code';
             }
             else {
                 ShowLoader('Fetching playlists...');

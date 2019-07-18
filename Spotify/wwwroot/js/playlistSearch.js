@@ -9,6 +9,15 @@ function Search() {
     const playlistMatches = GetPlaylistMatches(query);
     GlobalUseMobileView ? DisplayMobileResults(playlistMatches) : DisplayDesktopResults(playlistMatches);
     ListenForRemoveClicks();
+
+    if (playlistMatches.length > 0 && playlistMatches.length < 9)
+        LoadLibraryStatus(playlistMatches);
+}
+
+function LoadLibraryStatus(playlistMatches) {
+    const songs = playlistMatches.flatMap(p => p.songs.items);
+    const songIds = songs.map(i => i.track.uri.substring("spotify:track:".length));
+    GetLibraryStatus(DisplayLibraryStatus, _.uniq(songIds));
 }
 
 function GetPlaylistMatches(query) {
@@ -97,6 +106,34 @@ function RemoveFromServer(callback, playlistId, songUri) {
         alert('Delete exploded');
     }).done(function () {
         callback(playlistId, songUri);
+    });
+}
+
+function GetLibraryStatus(callback, songIds) {
+    const songIdsJoined = songIds.join(',');
+    $.ajax({
+        url: `https://api.spotify.com/v1/me/tracks/contains?ids=${songIdsJoined}`,
+        type: 'get',
+        headers: {
+            'Authorization': `Bearer ${GlobalAccessToken}`
+        },
+        beforeSend: function () { }
+    }).always(function () {
+    }).fail(function () {
+        //alert('Library lookup exploded');
+    }).done(function (results) {
+        const songLibraryMap = {};
+        songIds.forEach((s, i) => songLibraryMap[s] = results[i]);
+        callback(songLibraryMap);
+    });
+}
+
+function DisplayLibraryStatus(songLibraryMap) {
+    $('.song-mobile').each(function() {
+        const songId = $(this).attr('uri').substring("spotify:track:".length);
+        const isInLibrary = songLibraryMap[songId];
+        if (isInLibrary)
+            $(this).addClass('library-song');
     });
 }
 
