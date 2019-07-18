@@ -41,10 +41,12 @@ function DisplayMobileResults(playlistMatches) {
 
 function BuildMobilePlaylistHtml(playlist) {
     const songs = playlist.songs.items;
-    let playlistSection = `<div class="row playlist-section"><div class="col-xs-12 text-left"><h3>${playlist.name}</h3></div></div><hr class="playlist-separator" />`;
-    const playlistSongsHtml = songs.reduce((prev, song) => `${prev}<div class="song" playlistId="${playlist.id}" uri="${song.track.uri}"><p class="song-name">${song.track.name}</p><p class="artist-name">${song.track.artistsString}</p></div>`, '');
-    const songsSection = `<div class="row"><div class="col-xs-12 text-left">${playlistSongsHtml}</div></div>`;
-    return playlistSection += songsSection;
+    const playlistSection = `<div class="playlist-section"><div class="row"><div class="col-xs-12 text-left"><h3>${playlist.name}</h3></div></div><hr class="playlist-separator" />`;
+    const playlistSongsHtml =
+        songs.reduce(
+            (prev, song) => `${prev}<div class="song song-mobile" playlistId="${playlist.id}" uri="${song.track.uri}"><p class="song-name">${song.track.name}</p><p class="artist-name">${song.track.artistsString}</p></div>`, '');
+    const songsSection = `<div class="row"><div class="col-xs-12 text-left unpad">${playlistSongsHtml}</div></div>`;
+    return playlistSection + songsSection + '</div>';
 }
 
 function BuildTablePlaylistHtml(playlist) {

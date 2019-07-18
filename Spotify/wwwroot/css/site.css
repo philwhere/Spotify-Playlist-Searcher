@@ -28,6 +28,10 @@ td {
     background-color: transparent;
 }
 
+.unpad {
+    padding: 0;
+}
+
 /* Wrapping element */
 /* Set some basic padding to keep content from hitting the edges */
 .body-content {
@@ -137,6 +141,7 @@ td {
     margin-top: -12px;
     font-size: smaller;
     color: #a5a5a5;
+    margin-bottom: 0;
 }
 
 .playlist-section {
@@ -158,9 +163,13 @@ td {
     text-overflow: ellipsis;
 }
 
+.song-mobile {
+    padding: 5px 15px;
+}
+
 .playlist-separator {
     margin-top: 0;
-    margin-bottom: 13px;
+    margin-bottom: 8px;
     width: 64%;
     float: left;
 }
