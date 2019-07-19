@@ -47,7 +47,7 @@ namespace Spotify.Services
 
         public async Task<AuthorizationCodeResult> GetAuthorizationByCode(string authorizationCode, string redirectUri)
         {
-            var url = $"https://accounts.spotify.com/api/token";
+            const string url = "https://accounts.spotify.com/api/token";
             var payload = new AuthorizationTokenPayload(authorizationCode, redirectUri, 
                 _configuration.ClientId, _configuration.ClientSecret);
             var response = await _httpClient.PostFormWithToken<AuthorizationCodeResult>(url, payload);
@@ -56,7 +56,7 @@ namespace Spotify.Services
 
         public async Task<RefreshTokenResult> GetTokenByRefresh(string refreshToken)
         {
-            var url = $"https://accounts.spotify.com/api/token";
+            const string url = "https://accounts.spotify.com/api/token";
             var payload = new RefreshTokenPayload(refreshToken, 
                 _configuration.ClientId, _configuration.ClientSecret);
             var response = await _httpClient.PostFormWithToken<RefreshTokenResult>(url, payload);
@@ -65,9 +65,16 @@ namespace Spotify.Services
 
         public async Task<Profile> GetProfile(string accessToken)
         {
-            var url = "https://api.spotify.com/v1/me";
+            const string url = "https://api.spotify.com/v1/me";
             var response = await _httpClient.GetWithToken<Profile>(url, accessToken);
             return response;
+        }
+
+        public async Task<SpotifyItemResponse<SongItem>> GetAllLibrarySongs(string accessToken)
+        {
+            const string url = "https://api.spotify.com/v1/me/tracks?limit=50";
+            var songs = await GetAllPages<SongItem>(url, accessToken);
+            return songs;
         }
 
 
@@ -80,7 +87,7 @@ namespace Spotify.Services
 
         private async Task<List<PlaylistItem>> GetAllPlaylists(string accessToken)
         {
-            var url = "https://api.spotify.com/v1/me/playlists?limit=50";
+            const string url = "https://api.spotify.com/v1/me/playlists?limit=50";
             var playlists = await GetAllPages<PlaylistItem>(url, accessToken);
             return playlists.items;
         }

@@ -6,14 +6,14 @@ const GlobalUrlParams = new URLSearchParams(window.location.search);
 
 
 function ShowLoader(message) {
-    if ($('#loader').hasClass('hidden'))
-        $('#loader').toggleClass('hidden');
-    $('#loaderMessage').text(message);
+    if ($("#loader").hasClass("hidden"))
+        $("#loader").toggleClass("hidden");
+    $("#loaderMessage").text(message);
 }
 
 function HideLoader() {
-    if (!$('#loader').hasClass('hidden'))
-        $('#loader').toggleClass('hidden');
+    if (!$("#loader").hasClass("hidden"))
+        $("#loader").toggleClass("hidden");
 }
 
 function GetUrlParams() {
@@ -25,12 +25,4 @@ function GetUrlParams() {
 
 function CalculateUnixInMsExpiry(expiresInSeconds) {
     return new Date().valueOf() + expiresInSeconds * 1000 - 1000; //- 1000 to get clock to start at 59:59
-}
-
-async function Delay(delayInMs) {
-    return new Promise(resolve  => {
-        setTimeout(() => {
-            resolve(2);
-        }, delayInMs);
-    });
 }

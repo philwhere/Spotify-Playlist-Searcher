@@ -12,5 +12,6 @@ namespace Spotify.Services.Interfaces
         Task<AuthorizationCodeResult> GetAuthorizationByCode(string authorizationCode, string redirectUri);
         Task<RefreshTokenResult> GetTokenByRefresh(string refreshToken);
         Task<Profile> GetProfile(string accessToken);
+        Task<SpotifyItemResponse<SongItem>> GetAllLibrarySongs(string accessToken);
     }
 }

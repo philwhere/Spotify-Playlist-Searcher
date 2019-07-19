@@ -1,10 +1,10 @@
-﻿var GlobalAccessToken = GlobalUrlParams.get('access_token');
+﻿var GlobalAccessToken = GlobalUrlParams.get("access_token");
 var GlobalUseMobileView;
-var GlobalSelectedSearchOption = 'All';
+var GlobalSelectedSearchOption = "All";
 var GlobalLastSearchTimestamp;
 
 function Search() {
-    const query = $('#searchBar').val().trim();
+    const query = $("#searchBar").val().trim();
     if (query.length < 3)
         return;
     const playlistMatches = GetPlaylistMatches(query);
@@ -46,18 +46,18 @@ function GetPlaylistMatches(query) {
 }
 
 function DisplayDesktopResults(playlistMatches) {
-    $('#tableBody').empty();
-    const html = playlistMatches.reduce((prev, playlist) => `${prev}${BuildTablePlaylistHtml(playlist)}`, '');
-    $('#tableBody').append(html);
+    $("#tableBody").empty();
+    const html = playlistMatches.reduce((prev, playlist) => `${prev}${BuildTablePlaylistHtml(playlist)}`, "");
+    $("#tableBody").append(html);
     _.isEmpty(playlistMatches)
-        ? $('#tablePanel').addClass('hidden')
-        : $('#tablePanel').removeClass('hidden');
+        ? $("#tablePanel").addClass("hidden")
+        : $("#tablePanel").removeClass("hidden");
 }
 
 function DisplayMobileResults(playlistMatches) {
-    $('#resultsContainer').empty();
-    const html = playlistMatches.reduce((prev, playlist) => `${prev}${BuildMobilePlaylistHtml(playlist)}`, '');
-    $('#resultsContainer').removeClass('hidden').append(html);
+    $("#resultsContainer").empty();
+    const html = playlistMatches.reduce((prev, playlist) => `${prev}${BuildMobilePlaylistHtml(playlist)}`, "");
+    $("#resultsContainer").removeClass("hidden").append(html);
 }
 
 function BuildMobilePlaylistHtml(playlist) {
@@ -65,9 +65,9 @@ function BuildMobilePlaylistHtml(playlist) {
     const playlistSection = `<div class="playlist-section"><div class="row"><div class="col-xs-12 text-left"><h3>${playlist.name}</h3></div></div><hr class="playlist-separator" />`;
     const playlistSongsHtml =
         songs.reduce(
-            (prev, song) => `${prev}<div class="song song-mobile" playlistId="${playlist.id}" uri="${song.track.uri}"><p class="song-name">${song.track.name}</p><p class="artist-name">${song.track.artistsString}</p></div>`, '');
+            (prev, song) => `${prev}<div class="song song-mobile" playlistId="${playlist.id}" uri="${song.track.uri}"><p class="song-name">${song.track.name}</p><p class="artist-name">${song.track.artistsString}</p></div>`, "");
     const songsSection = `<div class="row"><div class="col-xs-12 text-left unpad">${playlistSongsHtml}</div></div>`;
-    return playlistSection + songsSection + '</div>';
+    return playlistSection + songsSection + "</div>";
 }
 
 function BuildTablePlaylistHtml(playlist) {
@@ -77,15 +77,15 @@ function BuildTablePlaylistHtml(playlist) {
     //const tracks = songs.reduce((prev, song) => `${prev}<p class="song" playlistId="${playlist.id}" uri="${song.track.uri}">${song.track.name}</p>`, '');
     //return row += `<td>${artists}</td><td>${tracks}</td></tr>`;
 
-    return songs.reduce((prev, song) => `${prev}<tr class="song" playlistId="${playlist.id}" uri="${song.track.uri}"><td class="text-center">${playlist.name}</td><td>${song.track.artistsString}</td><td>${song.track.name}</td></tr>`, '');
+    return songs.reduce((prev, song) => `${prev}<tr class="song" playlistId="${playlist.id}" uri="${song.track.uri}"><td class="text-center">${playlist.name}</td><td>${song.track.artistsString}</td><td>${song.track.name}</td></tr>`, "");
 }
 
 function GetMatch(track, query) {
     if (!track)
         return false;
-    if (GlobalSelectedSearchOption === 'Song')
+    if (GlobalSelectedSearchOption === "Song")
         return PartialMatch(track.name, query);
-    if (GlobalSelectedSearchOption === 'Artist')
+    if (GlobalSelectedSearchOption === "Artist")
         return PartialMatch(track.artistsString, query);
     return PartialMatch(track.name, query) || PartialMatch(track.artistsString, query);
 }
@@ -105,27 +105,27 @@ function TriggerRemoval(playlistId, songUri) {
 function RemoveFromServer(callback, playlistId, songUri) {
     $.ajax({
         url: `/api/spotify/playlists/${playlistId}/tracks/${songUri}`,
-        type: 'delete',
+        type: "delete",
         headers: {
             'Authorization': `Bearer ${GlobalAccessToken}`
         },
         beforeSend: function () {
-            ShowLoader('Removing song from playlist...');
+            ShowLoader("Removing song from playlist...");
         }
     }).always(function () {
         HideLoader();
     }).fail(function () {
-        alert('Delete exploded');
+        alert("Delete exploded");
     }).done(function () {
         callback(playlistId, songUri);
     });
 }
 
 function GetLibraryStatus(callback, songIds) {
-    const songIdsJoined = songIds.join(',');
+    const songIdsJoined = songIds.join(",");
     $.ajax({
         url: `https://api.spotify.com/v1/me/tracks/contains?ids=${songIdsJoined}`,
-        type: 'get',
+        type: "get",
         headers: {
             'Authorization': `Bearer ${GlobalAccessToken}`
         },
@@ -141,12 +141,12 @@ function GetLibraryStatus(callback, songIds) {
 }
 
 function DisplayLibraryStatus(songLibraryMap) {
-    $('.song').each(function () {
-        const isLocal = $(this).attr('uri').startsWith("spotify:local");
-        const songId = $(this).attr('uri').replace("spotify:track:", "");
+    $(".song").each(function () {
+        const isLocal = $(this).attr("uri").startsWith("spotify:local");
+        const songId = $(this).attr("uri").replace("spotify:track:", "");
         const isInLibrary = songLibraryMap[songId];
         if (!isInLibrary && !isLocal)
-            $(this).addClass('non-library-song');
+            $(this).addClass("non-library-song");
     });
 }
 
@@ -158,15 +158,15 @@ function RemoveSongFromLocal(playlistId, songUri) {
 
 function GetNewAuthByRefreshToken(callback) {
     $.ajax({
-        url: `/api/spotify/token?refreshToken=${GlobalUrlParams.get('refresh_token')}`,
-        type: 'get',
+        url: `/api/spotify/token?refreshToken=${GlobalUrlParams.get("refresh_token")}`,
+        type: "get",
         beforeSend: function () {
-            ShowLoader('Refreshing session...');
+            ShowLoader("Refreshing session...");
         }
     }).always(function () {
         HideLoader();
     }).fail(function () {
-        alert('Refresh exploded');
+        alert("Refresh exploded");
     }).done(function (response) {
         const expiry = CalculateUnixInMsExpiry(response.expires_in);
         callback(response.access_token, expiry);
@@ -174,42 +174,42 @@ function GetNewAuthByRefreshToken(callback) {
 }
 
 function UpdateClockAndAccessToken(accessToken, expiry) {
-    ResetClock('clockDiv', new Date(expiry));
+    ResetClock("clockDiv", new Date(expiry));
     GlobalAccessToken = accessToken;
 }
 
 function RefreshPageWithNewAccess(accessToken, expiry) {
-    GlobalUrlParams.set('access_token', accessToken);
-    GlobalUrlParams.set('expiry', expiry);
-    ShowLoader('Refreshing playlists...');
+    GlobalUrlParams.set("access_token", accessToken);
+    GlobalUrlParams.set("expiry", expiry);
+    ShowLoader("Refreshing playlists...");
     window.location.search = GlobalUrlParams.toString();
 }
 
 function LoadInitialClock() {
-    const sessionExpiry = parseInt(GlobalUrlParams.get('expiry'));
-    InitializeClock('clockDiv', new Date(sessionExpiry));
+    const sessionExpiry = parseInt(GlobalUrlParams.get("expiry"));
+    InitializeClock("clockDiv", new Date(sessionExpiry));
 }
 
 function SwitchViews() {
     GlobalUseMobileView
-        ? $('#resultsContainer').removeClass('hidden')
-        : $('#tablePanel').removeClass('hidden');
+        ? $("#resultsContainer").removeClass("hidden")
+        : $("#tablePanel").removeClass("hidden");
     GlobalUseMobileView = !GlobalUseMobileView;
-    $('#resultsContainer,#tablePanel').toggleClass('hidden');
+    $("#resultsContainer,#tablePanel").toggleClass("hidden");
     Search();
 }
 
 function SetViewType() {
     GlobalUseMobileView = $(window).width() < 768;
     GlobalUseMobileView
-        ? $('#tablePanel').addClass('hidden')
-        : $('#resultsContainer').addClass('hidden');
+        ? $("#tablePanel").addClass("hidden")
+        : $("#resultsContainer").addClass("hidden");
     Search();
 }
 
 function UpdateSearchOption(option) {
     GlobalSelectedSearchOption = option.trim();
-    $('#selectedSearchOption').html(`${option} <span class="caret"></span>`);
+    $("#selectedSearchOption").html(`${option} <span class="caret"></span>`);
     Search();
 }
 
@@ -219,18 +219,18 @@ $(document).ready(function () {
 
     // Listeners
     // ------------------
-    $('#searchBar').keyup(() => Search());
-    $('#searchOptions li').click((e) => UpdateSearchOption(e.currentTarget.innerText));
-    $('#refreshDataButton').click(() => GetNewAuthByRefreshToken(RefreshPageWithNewAccess));
-    $('#refreshTokenButton').click(() => GetNewAuthByRefreshToken(UpdateClockAndAccessToken));
-    $('#secretViewSwitch').click(() => SwitchViews());
+    $("#searchBar").keyup(() => Search());
+    $("#searchOptions li").click((e) => UpdateSearchOption(e.currentTarget.innerText));
+    $("#refreshDataButton").click(() => GetNewAuthByRefreshToken(RefreshPageWithNewAccess));
+    $("#refreshTokenButton").click(() => GetNewAuthByRefreshToken(UpdateClockAndAccessToken));
+    $("#secretViewSwitch").click(() => SwitchViews());
     $(window).resize(() => SetViewType());
 });
 
 function ListenForRemoveClicks() {
-    $('.song').click(function () {
-        const playlistId = $(this).attr('playlistId');
-        const songUri = $(this).attr('uri');
+    $(".song").click(function () {
+        const playlistId = $(this).attr("playlistId");
+        const songUri = $(this).attr("uri");
         TriggerRemoval(playlistId, songUri);
     });
 }
