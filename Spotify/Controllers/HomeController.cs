@@ -53,8 +53,11 @@ namespace Spotify.Controllers
                 return RedirectToAction("Index");
             try
             {
+#if DEBUG
+                var playlists = this.GetEmbeddedResourceJsonAs<List<PlaylistItem>>("DataDump.json");
+#else
                 var playlists = await _spotifyClient.GetMyPlaylistsWithSongs(access_token);
-                //var playlists = this.GetEmbeddedResourceJsonAs<List<PlaylistItem>>("DataDump.json");
+#endif
                 return View(playlists);
             }
             catch

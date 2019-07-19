@@ -167,8 +167,8 @@ td {
     padding: 5px 15px;
 }
 
-.library-song {
-    border-right: 9px solid rgba(29, 185, 84, 0.6);
+.non-library-song {
+    border-right: 9px solid #a5a5a5;
 }
 
 .playlist-separator {

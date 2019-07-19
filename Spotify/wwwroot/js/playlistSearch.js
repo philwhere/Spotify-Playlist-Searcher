@@ -1,6 +1,7 @@
 ﻿var GlobalAccessToken = GlobalUrlParams.get('access_token');
 var GlobalUseMobileView;
 var GlobalSelectedSearchOption = 'All';
+var GlobalLastSearchTimestamp;
 
 function Search() {
     const query = $('#searchBar').val().trim();
@@ -10,14 +11,25 @@ function Search() {
     GlobalUseMobileView ? DisplayMobileResults(playlistMatches) : DisplayDesktopResults(playlistMatches);
     ListenForRemoveClicks();
 
-    if (playlistMatches.length > 0 && playlistMatches.length < 9)
-        LoadLibraryStatus(playlistMatches);
+    if (!_.isEmpty(playlistMatches))
+        LoadLibraryForLatestSearch(playlistMatches);
+}
+
+function LoadLibraryForLatestSearch(playlistMatches) {
+    const now = new Date().toISOString();
+    GlobalLastSearchTimestamp = now;
+    setTimeout(function () {
+        if (GlobalLastSearchTimestamp === now)
+            LoadLibraryStatus(playlistMatches);
+    }, 1000);
 }
 
 function LoadLibraryStatus(playlistMatches) {
     const songs = playlistMatches.flatMap(p => p.songs.items);
-    const songIds = songs.map(i => i.track.uri.substring("spotify:track:".length));
-    GetLibraryStatus(DisplayLibraryStatus, _.uniq(songIds));
+    const songUris = songs.map(i => i.track.uri).filter(uri => uri.startsWith("spotify:track")); //do not lookup local songs
+    const songIds = _.uniq(songUris.map(uri => uri.replace("spotify:track:", "")));
+    if (songIds.length < 9 && !_.isEmpty(songIds))
+        GetLibraryStatus(DisplayLibraryStatus, songIds);
 }
 
 function GetPlaylistMatches(query) {
@@ -129,11 +141,12 @@ function GetLibraryStatus(callback, songIds) {
 }
 
 function DisplayLibraryStatus(songLibraryMap) {
-    $('.song-mobile').each(function() {
-        const songId = $(this).attr('uri').substring("spotify:track:".length);
+    $('.song-mobile').each(function () {
+        const isLocal = $(this).attr('uri').startsWith("spotify:local");
+        const songId = $(this).attr('uri').replace("spotify:track:", "");
         const isInLibrary = songLibraryMap[songId];
-        if (isInLibrary)
-            $(this).addClass('library-song');
+        if (!isInLibrary && !isLocal)
+            $(this).addClass('non-library-song');
     });
 }
 
