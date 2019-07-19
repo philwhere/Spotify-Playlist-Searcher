@@ -121,6 +121,7 @@ td {
     letter-spacing: -0.04em;
     line-height: 1.15;
 }
+
     .spotty-title:hover, spotty-title:focus {
         color: #1DB954;
     }
@@ -132,6 +133,7 @@ td {
     border-color: white;
     padding-top: 5px;
 }
+
     .spotty-button:hover, .spotty-button:focus {
         color: white;
         font-weight: bold;
@@ -144,17 +146,15 @@ td {
     margin-bottom: 0;
 }
 
-.playlist-section {
+.playlist-section h3 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
 }
-    .playlist-section h3 {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-size: 28px;
-        font-weight: 900;
-        letter-spacing: -0.02em;
-        line-height: 1.2;
-    }
 
 .song-name {
     overflow: hidden;
@@ -167,10 +167,6 @@ td {
     padding: 5px 15px;
 }
 
-.non-library-song {
-    border-right: 9px solid #a5a5a5;
-}
-
 .playlist-separator {
     margin-top: 0;
     margin-bottom: 8px;
@@ -178,7 +174,20 @@ td {
     float: left;
 }
 
-.song:hover, .song:active, .song:focus {
+.non-library-song.song-mobile {
+    border-right: 9px solid #a5a5a5;
+}
+
+tr.non-library-song,
+tr.non-library-song:hover,
+tr.non-library-song:focus,
+tr.non-library-song:active {
+    background-image: linear-gradient(135deg, #a5a5a5, #a5a5a5 10px, transparent 10px, transparent);
+}
+
+.song:hover,
+.song:focus,
+.song:active {
     background: rgba(29, 185, 84, 0.6);
     cursor: pointer;
 }

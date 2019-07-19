@@ -141,7 +141,7 @@ function GetLibraryStatus(callback, songIds) {
 }
 
 function DisplayLibraryStatus(songLibraryMap) {
-    $('.song-mobile').each(function () {
+    $('.song').each(function () {
         const isLocal = $(this).attr('uri').startsWith("spotify:local");
         const songId = $(this).attr('uri').replace("spotify:track:", "");
         const isInLibrary = songLibraryMap[songId];
