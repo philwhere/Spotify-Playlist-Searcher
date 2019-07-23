@@ -6,9 +6,7 @@ using Spotify.Services.Interfaces;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Spotify.Extensions; //Dev
-using Spotify.Models.Responses; //Dev
-using System.Collections.Generic; //Dev
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Spotify.Controllers
 {
@@ -16,11 +14,14 @@ namespace Spotify.Controllers
     {
         private readonly SpotifyClientConfiguration _configuration;
         private readonly ISpotifyClient _spotifyClient;
+        private readonly IMemoryCache _memoryCache;
 
-        public HomeController(IOptions<SpotifyClientConfiguration> configuration, ISpotifyClient spotifyClient)
+
+        public HomeController(IOptions<SpotifyClientConfiguration> configuration, ISpotifyClient spotifyClient, IMemoryCache memoryCache)
         {
             _configuration = configuration.Value;
             _spotifyClient = spotifyClient;
+            _memoryCache = memoryCache;
         }
 
         public IActionResult Index()
@@ -54,7 +55,8 @@ namespace Spotify.Controllers
             try
             {
 #if DEBUG
-                var playlists = this.GetEmbeddedResourceJsonAs<List<PlaylistItem>>("DataDump.json");
+                var playlists = await _memoryCache.GetOrCreateAsync(access_token, 
+                    entry => _spotifyClient.GetMyPlaylistsWithSongs(access_token));
 #else
                 var playlists = await _spotifyClient.GetMyPlaylistsWithSongs(access_token);
 #endif

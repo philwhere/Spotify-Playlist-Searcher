@@ -103,19 +103,25 @@ function TriggerRemoval(playlistId, songUri) {
 }
 
 function RemoveFromServer(callback, playlistId, songUri) {
+    const body = { "tracks": [ { "uri": songUri } ] };
     $.ajax({
-        url: `/api/spotify/playlists/${playlistId}/tracks/${songUri}`,
+        url: `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
         type: "delete",
         headers: {
-            'Authorization': `Bearer ${GlobalAccessToken}`
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${GlobalAccessToken}`
         },
-        beforeSend: function () {
+        data: JSON.stringify(body),
+        beforeSend: function() {
             ShowLoader("Removing song from playlist...");
         }
     }).always(function () {
         HideLoader();
-    }).fail(function () {
-        alert("Delete exploded");
+    }).fail(function (ex) {
+        if (ex.responseJSON.error.message)
+            alert(ex.responseJSON.error.message);
+        else
+            alert("Delete exploded");
     }).done(function () {
         callback(playlistId, songUri);
     });
