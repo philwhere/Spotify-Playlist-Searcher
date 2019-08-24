@@ -4,9 +4,12 @@ using Spotify.Configuration;
 using Spotify.Models;
 using Spotify.Services.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
+using Spotify.Extensions;
+using Spotify.Models.Responses;
 
 namespace Spotify.Controllers
 {
@@ -55,8 +58,8 @@ namespace Spotify.Controllers
             try
             {
 #if DEBUG
-                var playlists = await _memoryCache.GetOrCreateAsync(access_token, 
-                    entry => _spotifyClient.GetMyPlaylistsWithSongs(access_token));
+                var playlists = _memoryCache.GetOrCreate(access_token, 
+                    entry => this.GetEmbeddedResourceJsonAs<List<PlaylistItem>>("DataDump.json"));
 #else
                 var playlists = await _spotifyClient.GetMyPlaylistsWithSongs(access_token);
 #endif

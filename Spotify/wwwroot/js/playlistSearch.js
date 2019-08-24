@@ -50,14 +50,14 @@ function DisplayDesktopResults(playlistMatches) {
     const html = playlistMatches.reduce((prev, playlist) => `${prev}${BuildTablePlaylistHtml(playlist)}`, "");
     $("#tableBody").append(html);
     _.isEmpty(playlistMatches)
-        ? $("#tablePanel").addClass("hidden")
-        : $("#tablePanel").removeClass("hidden");
+        ? $("#desktopResultsContainer").addClass("hidden")
+        : $("#desktopResultsContainer").removeClass("hidden");
 }
 
 function DisplayMobileResults(playlistMatches) {
-    $("#resultsContainer").empty();
+    $("#mobileResultsContainer").empty();
     const html = playlistMatches.reduce((prev, playlist) => `${prev}${BuildMobilePlaylistHtml(playlist)}`, "");
-    $("#resultsContainer").removeClass("hidden").append(html);
+    $("#mobileResultsContainer").removeClass("hidden").append(html);
 }
 
 function BuildMobilePlaylistHtml(playlist) {
@@ -83,15 +83,37 @@ function BuildTablePlaylistHtml(playlist) {
 function GetMatch(track, query) {
     if (!track)
         return false;
-    if (GlobalSelectedSearchOption === "Song")
+    if (GlobalSelectedSearchOption === "Songs")
         return PartialMatch(track.name, query);
-    if (GlobalSelectedSearchOption === "Artist")
+    if (GlobalSelectedSearchOption === "Artists")
         return PartialMatch(track.artistsString, query);
-    return PartialMatch(track.name, query) || PartialMatch(track.artistsString, query);
+    if (GlobalSelectedSearchOption === "Albums")
+        return PartialMatch(track.album.name, query);
+    return MatchesOnSongArtistOrAlbum(track, query);
 }
 
-function PartialMatch(type, query) {
-    return type.toLowerCase().includes(query.toLowerCase());
+function PartialMatch(field, query) {
+    const words = query.split(" ").filter(w => w !== "");
+    const isMatch = words.every(w => Matches(field, w));
+    return isMatch;
+}
+
+function MatchesOnSongArtistOrAlbum(track, query) {
+    const words = query.split(" ").filter(w => w !== "");
+    function matchesAnyField(word) {
+        return Matches(track.name, word) || Matches(track.artistsString, word) || Matches(track.album.name, word);
+    }
+    const isMatch = words.every(w => matchesAnyField(w));
+    return isMatch;
+}
+
+function Matches(field, query) {
+    field = NormalizeDiacritics(field);
+    return field.toLowerCase().includes(query.toLowerCase());
+}
+
+function NormalizeDiacritics(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
 function TriggerRemoval(playlistId, songUri) {
@@ -198,18 +220,18 @@ function LoadInitialClock() {
 
 function SwitchViews() {
     GlobalUseMobileView
-        ? $("#resultsContainer").removeClass("hidden")
-        : $("#tablePanel").removeClass("hidden");
+        ? $("#mobileResultsContainer").removeClass("hidden")
+        : $("#desktopResultsContainer").removeClass("hidden");
     GlobalUseMobileView = !GlobalUseMobileView;
-    $("#resultsContainer,#tablePanel").toggleClass("hidden");
-    Search();
+    $("#mobileResultsContainer,#desktopResultsContainer").toggleClass("hidden");
+    Search(); //search will display using state
 }
 
 function SetViewType() {
     GlobalUseMobileView = $(window).width() < 768;
     GlobalUseMobileView
-        ? $("#tablePanel").addClass("hidden")
-        : $("#resultsContainer").addClass("hidden");
+        ? $("#desktopResultsContainer").addClass("hidden")
+        : $("#mobileResultsContainer").addClass("hidden");
     Search();
 }
 
