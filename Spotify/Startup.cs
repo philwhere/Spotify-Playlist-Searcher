@@ -96,7 +96,7 @@ namespace Spotify
                 .HandleTransientHttpError()
                 .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 .WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.5, retryAttempt))
-                                                    + TimeSpan.FromMilliseconds(jitterer.Next(0, 666)));
+                                                    + TimeSpan.FromMilliseconds(jitterer.Next(333, 666)));
         }
     }
 }
