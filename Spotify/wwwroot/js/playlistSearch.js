@@ -141,7 +141,7 @@ async function TriggerRemoval(playlistId, songUri) {
     const track = playlist.songs.items.find(s => s.track.uri === songUri).track;
     const confirmed = confirm(`Do you want to remove "${track.name}" by "${track.artistsString}" from "${playlist.name}"?`);
     if (confirmed)
-        await RemoveFromServer(playlistId, songUri).done(() => RemoveSongFromLocal(playlistId, songUri));
+        await RemoveFromServer(playlistId, songUri).then(() => RemoveSongFromLocal(playlistId, songUri));
 }
 
 async function RemoveFromServer(playlistId, songUri) {
@@ -163,8 +163,10 @@ async function RemoveFromServer(playlistId, songUri) {
     }).fail(function (ex) {
         if (ex.responseJSON.error.message)
             alert(ex.responseJSON.error.message);
-        else
+        else {
             alert("Delete exploded");
+            throw ex;
+        }
     });
 }
 
