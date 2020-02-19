@@ -11,6 +11,8 @@ using Spotify.Services;
 using Spotify.Services.Interfaces;
 using System;
 using System.Net.Http;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 
 namespace Spotify
 {
@@ -34,8 +36,9 @@ namespace Spotify
             });
 
             services.AddMemoryCache();
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-
+            services.AddControllersWithViews().AddRazorRuntimeCompilation();
+            services.AddRazorPages();
+            services.AddHealthChecks();
 
             services.Configure<SpotifyClientConfiguration>(Configuration.GetSection("SpotifyClientConfiguration"));
 
@@ -45,7 +48,7 @@ namespace Spotify
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -61,12 +64,20 @@ namespace Spotify
             app.UseStaticFiles();
             app.UseCookiePolicy();
 
-            app.UseMvc(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapControllers();
+                endpoints.MapRazorPages();
+                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapHealthChecks("/health", new HealthCheckOptions());
             });
+            //app.UseMvc(routes =>
+            //{
+            //    routes.MapRoute(
+            //        name: "default",
+            //        template: "{controller=Home}/{action=Index}/{id?}");
+            //});
 
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)

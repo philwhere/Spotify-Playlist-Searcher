@@ -28,7 +28,7 @@ function LoadLibraryStatus(playlistMatches) {
     const songs = playlistMatches.flatMap(p => p.songs.items);
     const songUris = songs.map(i => i.track.uri).filter(uri => uri.startsWith("spotify:track")); //do not lookup local songs
     const songIds = _.uniq(songUris.map(uri => uri.replace("spotify:track:", "")));
-    if (songIds.length < 9 && !_.isEmpty(songIds))
+    if (songIds.length < 30 && !_.isEmpty(songIds))
         GetLibraryStatus(DisplayLibraryStatus, songIds);
 }
 
@@ -62,11 +62,24 @@ function DisplayMobileResults(playlistMatches) {
 
 function BuildMobilePlaylistHtml(playlist) {
     const songs = playlist.songs.items;
-    const playlistSection = `<div class="playlist-section"><div class="row"><div class="col-xs-12 text-left"><h3>${playlist.name}</h3></div></div><hr class="playlist-separator" />`;
+    const playlistSection = 
+        `<div class="playlist-section">
+            <div class="row">
+                <div class="col-xs-12 text-left">
+                    <h3>${playlist.name}</h3>
+                </div>
+            </div>
+        <hr class="playlist-separator" />`;
     const playlistSongsHtml =
-        songs.reduce(
-            (prev, song) => `${prev}<div class="song song-mobile" playlistId="${playlist.id}" uri="${song.track.uri}"><p class="song-name">${song.track.name}</p><p class="artist-name">${song.track.artistsString}</p></div>`, "");
-    const songsSection = `<div class="row"><div class="col-xs-12 text-left unpad">${playlistSongsHtml}</div></div>`;
+        songs.reduce((prev, song) => `${prev}
+            <div class="song song-mobile" playlistId="${playlist.id}" uri="${song.track.uri}">
+                <p class="song-name">${song.track.name}</p>
+                <p class="artist-name">${song.track.artistsString}</p>
+            </div>`, "");
+    const songsSection = 
+        `<div class="row">
+            <div class="col-xs-12 text-left unpad">${playlistSongsHtml}</div>
+        </div>`;
     return playlistSection + songsSection + "</div>";
 }
 
@@ -77,7 +90,12 @@ function BuildTablePlaylistHtml(playlist) {
     //const tracks = songs.reduce((prev, song) => `${prev}<p class="song" playlistId="${playlist.id}" uri="${song.track.uri}">${song.track.name}</p>`, '');
     //return row += `<td>${artists}</td><td>${tracks}</td></tr>`;
 
-    return songs.reduce((prev, song) => `${prev}<tr class="song" playlistId="${playlist.id}" uri="${song.track.uri}"><td class="text-center">${playlist.name}</td><td>${song.track.artistsString}</td><td>${song.track.name}</td></tr>`, "");
+    return songs.reduce((prev, song) => `${prev}
+        <tr class="song" playlistId="${playlist.id}" uri="${song.track.uri}">
+            <td class="text-center">${playlist.name}</td>
+            <td>${song.track.artistsString}</td>
+            <td>${song.track.name}</td>
+        </tr>`, "");
 }
 
 function GetMatch(track, query) {

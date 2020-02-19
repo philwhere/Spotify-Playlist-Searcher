@@ -63,13 +63,6 @@ namespace Spotify.Services
             return response;
         }
 
-        public async Task<Profile> GetProfile(string accessToken)
-        {
-            const string url = "https://api.spotify.com/v1/me";
-            var response = await _httpClient.GetWithToken<Profile>(url, accessToken);
-            return response;
-        }
-
         public async Task<SpotifyItemResponse<SongItem>> GetAllLibrarySongs(string accessToken)
         {
             const string url = "https://api.spotify.com/v1/me/tracks?limit=50";
@@ -77,6 +70,13 @@ namespace Spotify.Services
             return songs;
         }
 
+        
+        private async Task<Profile> GetProfile(string accessToken)
+        {
+            const string url = "https://api.spotify.com/v1/me";
+            var response = await _httpClient.GetWithToken<Profile>(url, accessToken);
+            return response;
+        }
 
         private async Task<List<PlaylistItem>> GetMyPlaylists(string accessToken)
         {

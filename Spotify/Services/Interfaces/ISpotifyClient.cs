@@ -11,7 +11,6 @@ namespace Spotify.Services.Interfaces
         Task RemoveTrackFromPlaylist(string playlistId, string trackUri, string accessToken);
         Task<AuthorizationCodeResult> GetAuthorizationByCode(string authorizationCode, string redirectUri);
         Task<RefreshTokenResult> GetTokenByRefresh(string refreshToken);
-        Task<Profile> GetProfile(string accessToken);
         Task<SpotifyItemResponse<SongItem>> GetAllLibrarySongs(string accessToken);
     }
 }
