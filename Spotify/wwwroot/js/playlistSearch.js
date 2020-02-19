@@ -223,22 +223,12 @@ async function RefreshToken() {
         });
 }
 
-function UpdateClockAndAccessToken(accessToken, expiry) {
-    ResetClock("clockDiv", new Date(expiry));
-    GlobalAccessToken = accessToken;
-}
-
 async function RefreshPageWithNewAccess() {
     await EnsureTokenIsFresh();
     GlobalUrlParams.set("access_token", GlobalAccessToken);
     GlobalUrlParams.set("expiry", GlobalAccessTokenExpiry);
     ShowLoader("Refreshing playlists...");
     window.location.search = GlobalUrlParams.toString();
-}
-
-function LoadInitialClock() {
-    const sessionExpiry = parseInt(GlobalUrlParams.get("expiry"));
-    InitializeClock("clockDiv", new Date(sessionExpiry));
 }
 
 function SwitchViews() {
@@ -265,7 +255,6 @@ function UpdateSearchOption(option) {
 }
 
 $(document).ready(() => {
-    LoadInitialClock();
     SetViewType();
 
     // Listeners
