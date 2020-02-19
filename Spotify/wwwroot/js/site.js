@@ -23,6 +23,6 @@ function GetUrlParams() {
     return params;
 }
 
-function CalculateUnixInMsExpiry(expiresInSeconds) {
+function CalculateExpiryInUnixMs(expiresInSeconds) {
     return new Date().valueOf() + expiresInSeconds * 1000 - 1000; //- 1000 to get clock to start at 59:59
 }

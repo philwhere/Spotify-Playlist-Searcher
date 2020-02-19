@@ -1,4 +1,5 @@
 ﻿var GlobalAccessToken = GlobalUrlParams.get("access_token");
+var GlobalAccessTokenExpiry = GlobalUrlParams.get("expiry");
 var GlobalUseMobileView;
 var GlobalSelectedSearchOption = "All";
 var GlobalLastSearchTimestamp;
@@ -18,18 +19,18 @@ function Search() {
 function LoadLibraryForLatestSearch(playlistMatches) {
     const now = new Date().toISOString();
     GlobalLastSearchTimestamp = now;
-    setTimeout(function () {
+    setTimeout(async () => {
         if (GlobalLastSearchTimestamp === now)
-            LoadLibraryStatus(playlistMatches);
+            await LoadLibraryStatus(playlistMatches);
     }, 1000);
 }
 
-function LoadLibraryStatus(playlistMatches) {
+async function LoadLibraryStatus(playlistMatches) {
     const songs = playlistMatches.flatMap(p => p.songs.items);
     const songUris = songs.map(i => i.track.uri).filter(uri => uri.startsWith("spotify:track")); //do not lookup local songs
     const songIds = _.uniq(songUris.map(uri => uri.replace("spotify:track:", "")));
     if (songIds.length < 30 && !_.isEmpty(songIds))
-        GetLibraryStatus(DisplayLibraryStatus, songIds);
+        await GetLibraryStatus(songIds).then((songLibraryMap) => DisplayLibraryStatus(songLibraryMap));
 }
 
 function GetPlaylistMatches(query) {
@@ -85,17 +86,18 @@ function BuildMobilePlaylistHtml(playlist) {
 
 function BuildTablePlaylistHtml(playlist) {
     const songs = playlist.songs.items;
-    //let row = `<tr><td class="text-center">${playlist.name}</td>`;
-    //const artists = songs.reduce((prev, song) => `${prev}<p>${song.track.artistsString}</p>`, '');
-    //const tracks = songs.reduce((prev, song) => `${prev}<p class="song" playlistId="${playlist.id}" uri="${song.track.uri}">${song.track.name}</p>`, '');
-    //return row += `<td>${artists}</td><td>${tracks}</td></tr>`;
-
     return songs.reduce((prev, song) => `${prev}
         <tr class="song" playlistId="${playlist.id}" uri="${song.track.uri}">
             <td class="text-center">${playlist.name}</td>
             <td>${song.track.artistsString}</td>
             <td>${song.track.name}</td>
         </tr>`, "");
+
+    // Artist grouped view
+    //let row = `<tr><td class="text-center">${playlist.name}</td>`;
+    //const artists = songs.reduce((prev, song) => `${prev}<p>${song.track.artistsString}</p>`, '');
+    //const tracks = songs.reduce((prev, song) => `${prev}<p class="song" playlistId="${playlist.id}" uri="${song.track.uri}">${song.track.name}</p>`, '');
+    //return row += `<td>${artists}</td><td>${tracks}</td></tr>`;
 }
 
 function GetMatch(track, query) {
@@ -134,17 +136,18 @@ function NormalizeDiacritics(str) {
     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
-function TriggerRemoval(playlistId, songUri) {
+async function TriggerRemoval(playlistId, songUri) {
     const playlist = GlobalPlaylists.find(p => p.id === playlistId);
     const track = playlist.songs.items.find(s => s.track.uri === songUri).track;
     const confirmed = confirm(`Do you want to remove "${track.name}" by "${track.artistsString}" from "${playlist.name}"?`);
     if (confirmed)
-        RemoveFromServer(RemoveSongFromLocal, playlistId, songUri);
+        await RemoveFromServer(playlistId, songUri).done(() => RemoveSongFromLocal(playlistId, songUri));
 }
 
-function RemoveFromServer(callback, playlistId, songUri) {
+async function RemoveFromServer(playlistId, songUri) {
+    await EnsureTokenIsFresh();
     const body = { "tracks": [ { "uri": songUri } ] };
-    $.ajax({
+    return $.ajax({
         url: `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
         type: "delete",
         headers: {
@@ -162,28 +165,21 @@ function RemoveFromServer(callback, playlistId, songUri) {
             alert(ex.responseJSON.error.message);
         else
             alert("Delete exploded");
-    }).done(function () {
-        callback(playlistId, songUri);
     });
 }
 
-function GetLibraryStatus(callback, songIds) {
+async function GetLibraryStatus(songIds) {
+    await EnsureTokenIsFresh();
     const songIdsJoined = songIds.join(",");
-    $.ajax({
-        url: `https://api.spotify.com/v1/me/tracks/contains?ids=${songIdsJoined}`,
-        type: "get",
-        headers: {
-            'Authorization': `Bearer ${GlobalAccessToken}`
-        },
-        beforeSend: function () { }
-    }).always(function () {
-    }).fail(function () {
-        //alert('Library lookup exploded');
-    }).done(function (results) {
-        const songLibraryMap = {};
-        songIds.forEach((s, i) => songLibraryMap[s] = results[i]);
-        callback(songLibraryMap);
-    });
+    const headers = new Headers();
+    headers.append("Authorization", `Bearer ${GlobalAccessToken}`);
+    return await fetch(`https://api.spotify.com/v1/me/tracks/contains?ids=${songIdsJoined}`, { headers })
+        .then(response => response.json())
+        .then(jsonResponse => {
+            const songLibraryMap = {};
+            songIds.forEach((s, i) => songLibraryMap[s] = jsonResponse[i]);
+            return songLibraryMap;
+        });
 }
 
 function DisplayLibraryStatus(songLibraryMap) {
@@ -202,21 +198,27 @@ function RemoveSongFromLocal(playlistId, songUri) {
     Search();
 }
 
-function GetNewAuthByRefreshToken(callback) {
-    $.ajax({
-        url: `/api/spotify/token?refreshToken=${GlobalUrlParams.get("refresh_token")}`,
-        type: "get",
-        beforeSend: function () {
-            ShowLoader("Refreshing session...");
-        }
-    }).always(function () {
-        HideLoader();
-    }).fail(function () {
-        alert("Refresh exploded");
-    }).done(function (response) {
-        const expiry = CalculateUnixInMsExpiry(response.expires_in);
-        callback(response.access_token, expiry);
-    });
+async function EnsureTokenIsFresh() {
+    const fiveMinutesInMs = 300000;
+    const offsetNowDate = new Date().valueOf() - fiveMinutesInMs;
+    const tokenIsExpired = () => GlobalAccessTokenExpiry < offsetNowDate;
+    if (tokenIsExpired())
+        await RefreshToken();
+}
+
+async function RefreshToken() {
+    ShowLoader("Refreshing session...");
+    return await fetch(`/api/spotify/token?refreshToken=${GlobalUrlParams.get("refresh_token")}`)
+        .then(response => response.json())
+        .then(jsonResponse => {
+            HideLoader();
+            GlobalAccessTokenExpiry = CalculateExpiryInUnixMs(jsonResponse.expires_in);
+            GlobalAccessToken = jsonResponse.access_token;
+        })
+        .catch((error) => { 
+            alert("Refresh exploded");
+            throw error;
+        });
 }
 
 function UpdateClockAndAccessToken(accessToken, expiry) {
@@ -224,9 +226,10 @@ function UpdateClockAndAccessToken(accessToken, expiry) {
     GlobalAccessToken = accessToken;
 }
 
-function RefreshPageWithNewAccess(accessToken, expiry) {
-    GlobalUrlParams.set("access_token", accessToken);
-    GlobalUrlParams.set("expiry", expiry);
+async function RefreshPageWithNewAccess() {
+    await EnsureTokenIsFresh();
+    GlobalUrlParams.set("access_token", GlobalAccessToken);
+    GlobalUrlParams.set("expiry", GlobalAccessTokenExpiry);
     ShowLoader("Refreshing playlists...");
     window.location.search = GlobalUrlParams.toString();
 }
@@ -259,7 +262,7 @@ function UpdateSearchOption(option) {
     Search();
 }
 
-$(document).ready(function () {
+$(document).ready(() => {
     LoadInitialClock();
     SetViewType();
 
@@ -267,16 +270,15 @@ $(document).ready(function () {
     // ------------------
     $("#searchBar").keyup(() => Search());
     $("#searchOptions li").click((e) => UpdateSearchOption(e.currentTarget.innerText));
-    $("#refreshDataButton").click(() => GetNewAuthByRefreshToken(RefreshPageWithNewAccess));
-    $("#refreshTokenButton").click(() => GetNewAuthByRefreshToken(UpdateClockAndAccessToken));
+    $("#refreshDataButton").click(async () => await RefreshPageWithNewAccess());
     $("#secretViewSwitch").click(() => SwitchViews());
     $(window).resize(() => SetViewType());
 });
 
 function ListenForRemoveClicks() {
-    $(".song").click(function () {
+    $(".song").click(async function () {
         const playlistId = $(this).attr("playlistId");
         const songUri = $(this).attr("uri");
-        TriggerRemoval(playlistId, songUri);
+        await TriggerRemoval(playlistId, songUri);
     });
 }
