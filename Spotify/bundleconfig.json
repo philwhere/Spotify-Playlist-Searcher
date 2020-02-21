@@ -20,7 +20,6 @@
     {
         "outputFileName": "wwwroot/js/playlistSearch.min.js",
         "inputFiles": [
-            "wwwroot/js/countdown.js",
             "wwwroot/js/playlistSearch.js"
         ],
         "minify": {

@@ -146,40 +146,35 @@ async function TriggerRemoval(playlistId, songUri) {
 
 async function RemoveFromServer(playlistId, songUri) {
     await EnsureTokenIsFresh();
-    const body = { "tracks": [ { "uri": songUri } ] };
-    return $.ajax({
-        url: `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
-        type: "delete",
+    const body = { "tracks": [{ "uri": songUri }] };
+    const options = {
+        method: "DELETE",
         headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${GlobalAccessToken}`
+             "Content-Type": "application/json",
+             "Authorization": `Bearer ${GlobalAccessToken}`
         },
-        data: JSON.stringify(body),
-        beforeSend: function() {
-            ShowLoader("Removing song from playlist...");
-        }
-    }).always(function () {
-        HideLoader();
-    }).fail(function (ex) {
-        if (ex.responseJSON.error.message)
-            alert(ex.responseJSON.error.message);
-        else {
-            alert("Delete exploded");
-            throw ex;
-        }
-    });
+        body: JSON.stringify(body)
+    };
+    ShowLoader("Removing song from playlist...");
+    return await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, options)
+        .then(response => {
+            HideLoader();
+            if (response.status === 401)
+                return response.json().then(json => {
+                    alert(`Delete exploded: ${json.error.message}`);
+                    throw Error(json.error.message);
+                });
+        });
 }
 
 async function GetLibraryStatus(songIds) {
     await EnsureTokenIsFresh();
     const songIdsJoined = songIds.join(",");
-    const headers = new Headers();
-    headers.append("Authorization", `Bearer ${GlobalAccessToken}`);
-    return await fetch(`https://api.spotify.com/v1/me/tracks/contains?ids=${songIdsJoined}`, { headers })
+    return await fetch(`https://api.spotify.com/v1/me/tracks/contains?ids=${songIdsJoined}`, { headers: { "Authorization": `Bearer ${GlobalAccessToken}` }})
         .then(response => response.json())
-        .then(jsonResponse => {
+        .then(json => {
             const songLibraryMap = {};
-            songIds.forEach((s, i) => songLibraryMap[s] = jsonResponse[i]);
+            songIds.forEach((s, i) => songLibraryMap[s] = json[i]);
             return songLibraryMap;
         });
 }
@@ -212,10 +207,10 @@ async function RefreshToken() {
     ShowLoader("Refreshing session...");
     return await fetch(`/api/spotify/token?refreshToken=${GlobalUrlParams.get("refresh_token")}`)
         .then(response => response.json())
-        .then(jsonResponse => {
+        .then(json => {
             HideLoader();
-            GlobalAccessTokenExpiry = CalculateExpiryInUnixMs(jsonResponse.expires_in);
-            GlobalAccessToken = jsonResponse.access_token;
+            GlobalAccessTokenExpiry = CalculateExpiryInUnixMs(json.expires_in);
+            GlobalAccessToken = json.access_token;
         })
         .catch((error) => { 
             alert("Refresh exploded");
