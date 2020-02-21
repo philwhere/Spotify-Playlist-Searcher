@@ -3,3 +3,5 @@
 
 # User-specific files
 appsettings.*.json
+
+FileCache/*

@@ -6,25 +6,22 @@ using Spotify.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.Caching;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Caching.Memory;
 using Spotify.Extensions;
 using Spotify.Models.Responses;
-
 namespace Spotify.Controllers
 {
     public class HomeController : Controller
     {
         private readonly SpotifyClientConfiguration _configuration;
         private readonly ISpotifyClient _spotifyClient;
-        private readonly IMemoryCache _memoryCache;
 
 
-        public HomeController(IOptions<SpotifyClientConfiguration> configuration, ISpotifyClient spotifyClient, IMemoryCache memoryCache)
+        public HomeController(IOptions<SpotifyClientConfiguration> configuration, ISpotifyClient spotifyClient)
         {
             _configuration = configuration.Value;
             _spotifyClient = spotifyClient;
-            _memoryCache = memoryCache;
         }
 
         public IActionResult Index()
@@ -51,15 +48,14 @@ namespace Spotify.Controllers
             return View();
         }
 
-        public async Task<IActionResult> PlaylistSearch(string access_token)
+        public async Task<IActionResult> PlaylistSearch(string access_token, string debugCacheKey = "1")
         {
             if (string.IsNullOrEmpty(access_token))
                 return RedirectToAction("Index");
             try
             {
 #if DEBUG
-                var playlists = _memoryCache.GetOrCreate(access_token, 
-                    entry => this.GetEmbeddedResourceJsonAs<List<PlaylistItem>>("DataDump.json"));
+                var playlists = await GetDebugPlaylists(access_token, debugCacheKey);
 #else
                 var playlists = await _spotifyClient.GetMyPlaylistsWithSongs(access_token);
 #endif
@@ -69,6 +65,18 @@ namespace Spotify.Controllers
             {
                 return RedirectToAction("Index");
             }
+        }
+
+
+        private async Task<List<PlaylistItem>> GetDebugPlaylists(string accessToken, string debugCacheKey)
+        {
+            var cache = new FileCache();
+            if (cache[debugCacheKey] != null)
+                return ((string)cache[debugCacheKey]).FromJson<List<PlaylistItem>>();
+
+            var playlists = await _spotifyClient.GetMyPlaylistsWithSongs(accessToken);
+            cache.Add(debugCacheKey, playlists.ToJson(), DateTimeOffset.Now.AddDays(1));
+            return playlists;
         }
 
         public IActionResult Privacy()
