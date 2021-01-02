@@ -243,14 +243,6 @@ async function RefreshData() {
         });
 }
 
-async function RefreshPageWithNewAccess() {
-    await EnsureTokenIsFresh();
-    GlobalUrlParams.set("access_token", GlobalAccessToken);
-    GlobalUrlParams.set("expiry", GlobalAccessTokenExpiry);
-    ShowLoader("Refreshing playlists...");
-    window.location.search = GlobalUrlParams.toString();
-}
-
 function SwitchViews() {
     GlobalUseMobileView
         ? $("#mobileResultsContainer").removeClass("hidden")
@@ -290,7 +282,6 @@ $(document).ready(() => {
     $("#searchBar").keyup(() => Search());
     $("#searchOptions li").click((e) => UpdateSearchOption(e.currentTarget.innerText));
     $("#refreshDataButton").click(async () => await RefreshData());
-    //$("#refreshDataButton").click(async () => await RefreshPageWithNewAccess());
     $("#secretViewSwitch").click(() => SwitchViews());
     $(window).resize(() => SetViewType());
 });

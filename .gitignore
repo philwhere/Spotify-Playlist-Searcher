@@ -262,3 +262,6 @@ __pycache__/
 
 # Publish Profiles
 *.pubxml
+
+# Arm Templates from Publish
+/Spotify/Properties/ServiceDependencies/
