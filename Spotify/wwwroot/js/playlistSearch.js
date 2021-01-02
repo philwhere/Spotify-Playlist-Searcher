@@ -171,7 +171,14 @@ async function GetLibraryStatus(songIds) {
     await EnsureTokenIsFresh();
     const songIdsJoined = songIds.join(",");
     return await fetch(`https://api.spotify.com/v1/me/tracks/contains?ids=${songIdsJoined}`, { headers: { "Authorization": `Bearer ${GlobalAccessToken}` }})
-        .then(response => response.json())
+        .then(response => {
+            if (response.status === 401)
+                return response.json().then(json => {
+                    alert(`${json.error.message}`);
+                    throw Error(json.error.message);
+                });
+            return response.json();
+        })
         .then(json => {
             const songLibraryMap = {};
             songIds.forEach((s, i) => songLibraryMap[s] = json[i]);
@@ -249,8 +256,16 @@ function UpdateSearchOption(option) {
     Search();
 }
 
+function BeginTrackingStaleness() {
+    const elapsedSeconds = (new Date() - GlobalDataRequestDate) / 1000;
+    const elapsedTimeMessage = `Refreshed ${PrettyPrintElapsedTime(elapsedSeconds)} ago`;
+    $("#lastRefresh").text(elapsedTimeMessage);
+    setTimeout(BeginTrackingStaleness, 1000);
+}
+
 $(document).ready(() => {
     SetViewType();
+    BeginTrackingStaleness();
 
     // Listeners
     // ------------------

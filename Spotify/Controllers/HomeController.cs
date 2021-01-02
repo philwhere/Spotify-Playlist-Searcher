@@ -54,6 +54,7 @@ namespace Spotify.Controllers
                 return RedirectToAction("Index");
             try
             {
+                ViewBag.DataRequestDate = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 #if DEBUG
                 var playlists = await GetDebugPlaylists(access_token, debugCacheKey);
 #else

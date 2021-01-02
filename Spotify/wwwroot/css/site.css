@@ -195,3 +195,16 @@ tr.non-library-song:active {
 .session-text {
     font-size: 17px;
 }
+
+/* Equal column heights within bootstrap row */
+.equal {
+    display: flex;
+    display: -webkit-flex;
+    flex-wrap: wrap;
+}
+
+.refresh-button-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}

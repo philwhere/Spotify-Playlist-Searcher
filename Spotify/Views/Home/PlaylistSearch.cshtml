@@ -7,11 +7,11 @@
 <h2 id="secretViewSwitch" class="spotty-title">Playlist Search</h2>
 
 <div>
-    <div class="row">
+    <div class="row equal">
         <div class="col-xs-6">
-            <h4 class="session-text">@($"{DateTime.Now:dd/MM h:mm tt}")</h4>
+            <h4 id="lastRefresh" class="session-text">Refreshed</h4>
         </div>
-        <div class="col-xs-6 text-right ">
+        <div class="col-xs-6 refresh-button-container">
             <div id="refreshDataButton" class="btn spotty-button">Refresh Data</div>
         </div>
     </div>
@@ -56,6 +56,7 @@
 @section scripts {
     <script>
         const GlobalPlaylists = @Html.Raw(Json.Serialize(Model));
+        const GlobalDataRequestDate = new Date(@ViewBag.DataRequestedDate);
     </script>
 
     <environment include="Development">
