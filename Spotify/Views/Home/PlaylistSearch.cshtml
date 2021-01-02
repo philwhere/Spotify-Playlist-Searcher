@@ -55,8 +55,8 @@
 
 @section scripts {
     <script>
-        const GlobalPlaylists = @Html.Raw(Json.Serialize(Model));
-        const GlobalDataRequestDate = new Date(@ViewBag.DataRequestedDate);
+        var GlobalPlaylists = @Html.Raw(Json.Serialize(Model));
+        var GlobalDataLastRequestedDate = new Date(@ViewBag.DataRequestedDate);
     </script>
 
     <environment include="Development">

@@ -225,6 +225,24 @@ async function RefreshToken() {
         });
 }
 
+async function RefreshData() {
+    await EnsureTokenIsFresh();
+    ShowLoader("Refreshing playlists...");
+    const requestDate = new Date();
+    return await fetch(`/api/spotify/playlists?accessToken=${GlobalAccessToken}`)
+        .then(response => response.json())
+        .then(json => {
+            GlobalDataLastRequestedDate = requestDate;
+            GlobalPlaylists = json;
+            HideLoader();
+            Search();
+        })
+        .catch((error) => {
+            alert("Data refresh exploded");
+            throw error;
+        });
+}
+
 async function RefreshPageWithNewAccess() {
     await EnsureTokenIsFresh();
     GlobalUrlParams.set("access_token", GlobalAccessToken);
@@ -257,7 +275,7 @@ function UpdateSearchOption(option) {
 }
 
 function BeginTrackingStaleness() {
-    const elapsedSeconds = (new Date() - GlobalDataRequestDate) / 1000;
+    const elapsedSeconds = (new Date() - GlobalDataLastRequestedDate) / 1000;
     const elapsedTimeMessage = `Refreshed ${PrettyPrintElapsedTime(elapsedSeconds)} ago`;
     $("#lastRefresh").text(elapsedTimeMessage);
     setTimeout(BeginTrackingStaleness, 1000);
@@ -271,7 +289,8 @@ $(document).ready(() => {
     // ------------------
     $("#searchBar").keyup(() => Search());
     $("#searchOptions li").click((e) => UpdateSearchOption(e.currentTarget.innerText));
-    $("#refreshDataButton").click(async () => await RefreshPageWithNewAccess());
+    $("#refreshDataButton").click(async () => await RefreshData());
+    //$("#refreshDataButton").click(async () => await RefreshPageWithNewAccess());
     $("#secretViewSwitch").click(() => SwitchViews());
     $(window).resize(() => SetViewType());
 });
