@@ -4,19 +4,43 @@
 }
 
 @section Scripts
-    {
+{
     <script>
-        $(document).ready(function () {
+        $(document).ready(async () => {
             const params = GetUrlParams();
             if (!params.code) {
                 ShowLoader("Authorizing...");
-                window.location = "https://accounts.spotify.com/authorize?client_id=@(ViewBag.ClientId)&redirect_uri=@(GetEncodedRedirectUri())&scope=playlist-read-private%20playlist-modify-public%20playlist-modify-private%20user-library-read&response_type=code";
-            }
-            else {
-                ShowLoader("Fetching playlists...");
-                window.location = `/home/authcoderedirect?code=${params.code}&redirect_uri=@(GetEncodedRedirectUri())`;
+                const scopes = [
+                    "playlist-read-private",
+                    "playlist-modify-public",
+                    "playlist-modify-private",
+                    "user-library-read",
+                    "user-modify-playback-state",
+                    "user-read-email",
+                    "user-read-private",
+                    "user-read-recently-played",
+                    "streaming"
+                ].join("%20");
+                window.location = `https://accounts.spotify.com/authorize?client_id=@(ViewBag.ClientId)&redirect_uri=@(GetEncodedRedirectUri())&scope=${scopes}&response_type=code`;
+            } else {
+                await GetAuthorization(params.code);
+                window.location = "@Url.Action("PlaylistSearch", "Home")";
             }
         });
+
+        async function GetAuthorization(code) {
+            ShowLoader("Getting access...");
+            return await fetch(`/api/spotify/authorize?code=${code}&redirectUri=@(GetEncodedRedirectUri())`)
+                .then(response => response.json())
+                .then(json => {
+                    HideLoader();
+                    SetupAuthorization(json.access_token, json.refresh_token, CalculateExpiryInUnixMs(json.expires_in));
+                })
+                .catch((error) => {
+                    window.location.href = "/";
+                    throw error;
+                });
+        }
     </script>
 }
 

@@ -1,0 +1,152 @@
+﻿@{
+    ViewData["Title"] = "Recently Played";
+}
+<h2 class="spotty-title">@ViewData["Title"]</h2>
+
+
+<div class="row equal">
+    <div class="col-xs-6">
+        A track currently playing will not be visible in play history until it has completed.
+    </div>
+    <div class="col-xs-6 refresh-button-container">
+        <div id="refreshDataButton" class="btn spotty-button">Refresh List</div>
+    </div>
+</div>
+
+<div id="desktopResultsContainer" class="panel panel-default media">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th style="width: 35%;" class="text-center">Title</th>
+                <th style="width: 45%;">Artist</th>
+                <th style="width: 20%;">Played</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+    </table>
+</div>
+
+@section Scripts
+{
+    <script>
+        async function GetRecentlyPlayedSongs() {
+            await EnsureTokenIsFresh();
+            ShowLoader("Getting recently played songs...");
+            return await fetch("https://api.spotify.com/v1/me/player/recently-played", { headers: { "Authorization": `Bearer ${GetAccessToken()}` } })
+                .then(response => response.json())
+                .then(json => {
+                    HideLoader();
+                    DisplayRecentlyPlayedSongs(json.items);
+                })
+                .catch((error) => {
+                    alert("Get \"recently played\" exploded");
+                    throw error;
+                });
+        }
+
+        function DisplayRecentlyPlayedSongs(items) {
+            const now = new Date();
+            items = items.map(i => {
+                const elapsedSeconds = (now - new Date(i.played_at)) / 1000;
+                const elapsedTimeMessage = `${PrettyPrintElapsedTime(elapsedSeconds)} ago`;
+                return {
+                    ...i,
+                    last_played: elapsedTimeMessage
+                }
+            });
+
+            $("#tableBody").empty();
+            const html = items.reduce((prev, item) => `${prev}${BuildItemsTable(item)}`, "");
+            $("#tableBody").append(html);
+            ListenForClicks();
+            TrackStaleness();
+        }
+
+        function BuildItemsTable(item) {
+            const concatenatedArtists = item.track.artists.map(a => a.name).reduce((prev, artistName) => `${prev}, ${artistName}`);
+            return `<tr class="song" uri="${item.track.uri}" playedAt="${item.played_at}">
+                            <td class="text-center">${item.track.name}</td>
+                            <td>${concatenatedArtists}</td>
+                            <td class="last-played">${item.last_played}</td>
+                        </tr>`;
+        };
+
+        function TrackStaleness() {
+            const now = new Date();
+            $(".song").each(function () {
+                const playedAt = $(this).attr("playedAt");
+                const elapsedSeconds = (now - new Date(playedAt)) / 1000;
+                const elapsedTimeMessage = `${PrettyPrintElapsedTime(elapsedSeconds)} ago`;
+                $(this).find(".last-played").text(elapsedTimeMessage);
+            });
+            setTimeout(TrackStaleness, 1000);
+        }
+
+        function ListenForClicks() {
+            $(".song").click(async function () {
+                const songUri = $(this).attr("uri");
+                window.location = songUri;
+            });
+        }
+
+
+        $(document).ready(async () => {
+            $("#refreshDataButton").click(async () => await GetRecentlyPlayedSongs());
+            await GetRecentlyPlayedSongs();
+        });
+    </script>
+}
+
+@*@section Scripts
+    {
+        <script src="https://sdk.scdn.co/spotify-player.js"></script>
+        <script>
+            var player = {};
+            window.onSpotifyWebPlaybackSDKReady = () => {
+                player = new Spotify.Player({
+                    name: 'Web Playback SDK Quick Start Player',
+                    getOAuthToken: async cb => {
+                        await EnsureTokenIsFresh();
+                        cb(GetAccessToken());
+                    }
+                });
+
+                // Error handling
+                player.addListener('initialization_error', ({ message }) => { console.error(message); });
+                player.addListener('authentication_error', ({ message }) => { console.error(message); });
+                player.addListener('account_error', ({ message }) => { console.error(message); });
+                player.addListener('playback_error', ({ message }) => { console.error(message); });
+
+                // Playback status updates
+                player.addListener('player_state_changed', state => { console.log(state); });
+
+                // Ready
+                player.addListener('ready',
+                    ({ device_id }) => {
+                        console.log('Ready with Device ID', device_id);
+                    });
+
+                // Not Ready
+                player.addListener('not_ready',
+                    ({ device_id }) => {
+                        console.log('Device ID has gone offline', device_id);
+                    });
+
+                // Connect to the player!
+                player.connect();
+            };
+
+            const play = (spotifyUri) => {
+                player._options.getOAuthToken(accessToken => {
+                    fetch(`https://api.spotify.com/v1/me/player/play?device_id=${player._options.id}`, {
+                        method: 'PUT',
+                        body: JSON.stringify({ uris: [spotifyUri] }),
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${accessToken}`
+                        }
+                    });
+                });
+            };
+        </script>
+    }*@

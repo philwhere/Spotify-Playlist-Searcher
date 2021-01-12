@@ -1,7 +1,4 @@
-﻿@using Spotify.Models.Responses;
-@model List<PlaylistItem>
-
-@{
+﻿@{
     ViewData["Title"] = "Playlist Search";
 }
 <h2 id="secretViewSwitch" class="spotty-title">Playlist Search</h2>
@@ -54,11 +51,6 @@
 
 
 @section scripts {
-    <script>
-        var GlobalPlaylists = @Html.Raw(Json.Serialize(Model));
-        var GlobalDataLastRequestedDate = new Date(@ViewBag.DataRequestedDate);
-    </script>
-
     <environment include="Development">
         <script src="~/js/countdown.js" asp-append-version=true></script>
         <script src="~/js/playlistSearch.js" asp-append-version=true></script>

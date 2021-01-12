@@ -50,6 +50,13 @@ namespace Spotify.Controllers.WebApi
             return new OkObjectResult(playlists);
         }
 
+        [HttpGet]
+        [Route("authorize")]
+        public async Task<IActionResult> GetAuthorizationByCode(string code, string redirectUri)
+        {
+            var authorization = await _spotifyClient.GetAuthorizationByCode(code, redirectUri);
+            return new OkObjectResult(authorization);
+        }
 
         private string ExtractBearerToken()
         {

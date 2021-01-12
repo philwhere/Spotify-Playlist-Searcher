@@ -1,8 +1,8 @@
-﻿var GlobalAccessToken = GlobalUrlParams.get("access_token");
-var GlobalAccessTokenExpiry = GlobalUrlParams.get("expiry");
-var GlobalUseMobileView;
+﻿var GlobalUseMobileView;
 var GlobalSelectedSearchOption = "All";
 var GlobalLastSearchTimestamp;
+var GlobalPlaylists;
+var GlobalDataLastRequestedDate;
 
 function Search() {
     const query = $("#searchBar").val().trim();
@@ -151,7 +151,7 @@ async function RemoveFromServer(playlistId, songUri) {
         method: "DELETE",
         headers: {
              "Content-Type": "application/json",
-             "Authorization": `Bearer ${GlobalAccessToken}`
+             "Authorization": `Bearer ${GetAccessToken()}`
         },
         body: JSON.stringify(body)
     };
@@ -170,7 +170,7 @@ async function RemoveFromServer(playlistId, songUri) {
 async function GetLibraryStatus(songIds) {
     await EnsureTokenIsFresh();
     const songIdsJoined = songIds.join(",");
-    return await fetch(`https://api.spotify.com/v1/me/tracks/contains?ids=${songIdsJoined}`, { headers: { "Authorization": `Bearer ${GlobalAccessToken}` }})
+    return await fetch(`https://api.spotify.com/v1/me/tracks/contains?ids=${songIdsJoined}`, { headers: { "Authorization": `Bearer ${GetAccessToken()}` }})
         .then(response => {
             if (response.status === 401)
                 return response.json().then(json => {
@@ -202,34 +202,11 @@ function RemoveSongFromLocal(playlistId, songUri) {
     Search();
 }
 
-async function EnsureTokenIsFresh() {
-    const fiveMinutesInMs = 300000;
-    const offsetNowDate = new Date().valueOf() - fiveMinutesInMs;
-    const tokenIsExpired = () => GlobalAccessTokenExpiry < offsetNowDate;
-    if (tokenIsExpired())
-        await RefreshToken();
-}
-
-async function RefreshToken() {
-    ShowLoader("Refreshing session...");
-    return await fetch(`/api/spotify/token?refreshToken=${GlobalUrlParams.get("refresh_token")}`)
-        .then(response => response.json())
-        .then(json => {
-            HideLoader();
-            GlobalAccessTokenExpiry = CalculateExpiryInUnixMs(json.expires_in);
-            GlobalAccessToken = json.access_token;
-        })
-        .catch((error) => { 
-            alert("Refresh exploded");
-            throw error;
-        });
-}
-
 async function RefreshData() {
     await EnsureTokenIsFresh();
     ShowLoader("Refreshing playlists...");
     const requestDate = new Date();
-    return await fetch(`/api/spotify/playlists?accessToken=${GlobalAccessToken}`)
+    return await fetch(`/api/spotify/playlists?accessToken=${GetAccessToken()}`)
         .then(response => response.json())
         .then(json => {
             GlobalDataLastRequestedDate = requestDate;
@@ -273,8 +250,9 @@ function BeginTrackingStaleness() {
     setTimeout(BeginTrackingStaleness, 1000);
 }
 
-$(document).ready(() => {
+$(document).ready(async () => {
     SetViewType();
+    await RefreshData();
     BeginTrackingStaleness();
 
     // Listeners
