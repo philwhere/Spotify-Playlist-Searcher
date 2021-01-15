@@ -1,6 +1,6 @@
 ﻿const GetAccessToken = () => localStorage.getItem("access_token");
-const GetAccessTokenExpiry = () => localStorage.getItem("token_expiry");
 const GetRefreshToken = () => localStorage.getItem("refresh_token");
+const GetAccessTokenExpiry = () => parseInt(localStorage.getItem("token_expiry"));
 
 function SetupAuthorization(accessToken, refreshToken, tokenExpiry) {
     localStorage.setItem("access_token", accessToken);
@@ -9,10 +9,11 @@ function SetupAuthorization(accessToken, refreshToken, tokenExpiry) {
 }
 
 async function EnsureTokenIsFresh() {
-    const fiveMinutesInMs = 300000;
-    const offsetNowDate = new Date().valueOf() - fiveMinutesInMs;
-    const needsRefreshing = GetAccessTokenExpiry() < offsetNowDate;
-    if (needsRefreshing)
+    const fiveMinutesInMs = 300000; // safety buffer
+    const now = new Date().valueOf();
+    const expiryWithBufferSubtracted = GetAccessTokenExpiry() - fiveMinutesInMs;
+    const tokenIsAlive = expiryWithBufferSubtracted > now;
+    if (!tokenIsAlive)
         await RefreshToken();
 }
 

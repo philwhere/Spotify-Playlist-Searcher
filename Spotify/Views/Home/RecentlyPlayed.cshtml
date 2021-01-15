@@ -33,14 +33,17 @@
             await EnsureTokenIsFresh();
             ShowLoader("Getting recently played songs...");
             return await fetch("https://api.spotify.com/v1/me/player/recently-played", { headers: { "Authorization": `Bearer ${GetAccessToken()}` } })
-                .then(response => response.json())
+                .then(response => {
+                    if (response.status !== 200)
+                        return response.json().then(json => {
+                            alert(`${json.error.message}`);
+                            throw Error(json.error.message);
+                        });
+                    return response.json();
+                })
                 .then(json => {
                     HideLoader();
                     DisplayRecentlyPlayedSongs(json.items);
-                })
-                .catch((error) => {
-                    alert("Get \"recently played\" exploded");
-                    throw error;
                 });
         }
 
@@ -65,10 +68,10 @@
         function BuildItemsTable(item) {
             const concatenatedArtists = item.track.artists.map(a => a.name).reduce((prev, artistName) => `${prev}, ${artistName}`);
             return `<tr class="song" uri="${item.track.uri}" playedAt="${item.played_at}">
-                            <td class="text-center">${item.track.name}</td>
-                            <td>${concatenatedArtists}</td>
-                            <td class="last-played">${item.last_played}</td>
-                        </tr>`;
+                                <td class="text-center">${item.track.name}</td>
+                                <td>${concatenatedArtists}</td>
+                                <td class="last-played">${item.last_played}</td>
+                            </tr>`;
         };
 
         function TrackStaleness() {

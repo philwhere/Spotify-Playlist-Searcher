@@ -159,11 +159,12 @@ async function RemoveFromServer(playlistId, songUri) {
     return await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, options)
         .then(response => {
             HideLoader();
-            if (response.status === 401)
+            if (response.status !== 200)
                 return response.json().then(json => {
                     alert(`Delete exploded: ${json.error.message}`);
                     throw Error(json.error.message);
                 });
+            return response.json();
         });
 }
 
@@ -172,7 +173,7 @@ async function GetLibraryStatus(songIds) {
     const songIdsJoined = songIds.join(",");
     return await fetch(`https://api.spotify.com/v1/me/tracks/contains?ids=${songIdsJoined}`, { headers: { "Authorization": `Bearer ${GetAccessToken()}` }})
         .then(response => {
-            if (response.status === 401)
+            if (response.status !== 200)
                 return response.json().then(json => {
                     alert(`${json.error.message}`);
                     throw Error(json.error.message);

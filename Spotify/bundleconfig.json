@@ -1,32 +1,42 @@
 ﻿[
-    {
-        "outputFileName": "wwwroot/css/site.min.css",
-        "inputFiles": [
-            "wwwroot/css/site.css",
-            "wwwroot/css/loaderAnimation.css"
-        ]
+  {
+    "outputFileName": "wwwroot/css/site.min.css",
+    "inputFiles": [
+      "wwwroot/css/site.css",
+      "wwwroot/css/loaderAnimation.css"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/site.min.js",
+    "inputFiles": [
+      "wwwroot/js/site.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": false
     },
-    {
-        "outputFileName": "wwwroot/js/site.min.js",
-        "inputFiles": [
-          "wwwroot/js/site.js",
-          "wwwroot/js/auth.js"
-        ],
-        "minify": {
-            "enabled": true,
-            "renameLocals": false
-        },
-        "sourceMap": false
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/js/auth.min.js",
+    "inputFiles": [
+      "wwwroot/js/auth.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": false
     },
-    {
-        "outputFileName": "wwwroot/js/playlistSearch.min.js",
-        "inputFiles": [
-            "wwwroot/js/playlistSearch.js"
-        ],
-        "minify": {
-            "enabled": false,
-            "renameLocals": false
-        },
-        "sourceMap": false
-    }
+    "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/js/playlistSearch.min.js",
+    "inputFiles": [
+      "wwwroot/js/playlistSearch.js"
+    ],
+    "minify": {
+      "enabled": false,
+      "renameLocals": false
+    },
+    "sourceMap": false
+  }
 ]
