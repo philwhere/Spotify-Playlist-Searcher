@@ -32,7 +32,7 @@
         async function GetRecentlyPlayedSongs() {
             await EnsureTokenIsFresh();
             ShowLoader("Getting recently played songs...");
-            return await fetch("https://api.spotify.com/v1/me/player/recently-played", { headers: { "Authorization": `Bearer ${GetAccessToken()}` } })
+            return await fetch("https://api.spotify.com/v1/me/player/recently-played?limit=50", { headers: { "Authorization": `Bearer ${GetAccessToken()}` } })
                 .then(response => {
                     if (response.status !== 200)
                         return response.json().then(json => {
