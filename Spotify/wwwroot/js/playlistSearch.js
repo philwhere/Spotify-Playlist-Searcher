@@ -128,9 +128,14 @@ function MatchesOnSongArtistOrAlbum(track, query) {
 }
 
 function Matches(field, query) {
-    field = NormalizeDiacritics(field);
-    return field.toLowerCase().includes(query.toLowerCase());
+    field = NormalizeDiacritics(field).toLowerCase();
+    query = query.toLowerCase();
+    return field.includes(query) || RemoveApostrophes(field).includes(query);
 }
+
+function RemoveApostrophes(str) {
+    return str.replaceAll("'", "");
+};
 
 function NormalizeDiacritics(str) {
     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -205,7 +210,7 @@ function RemoveSongFromLocal(playlistId, songUri) {
 
 async function RefreshData() {
     await EnsureTokenIsFresh();
-    ShowLoader("Refreshing playlists...");
+    ShowLoader("Getting playlists...");
     const requestDate = new Date();
     return await fetch(`/api/spotify/playlists?accessToken=${GetAccessToken()}`)
         .then(response => response.json())
