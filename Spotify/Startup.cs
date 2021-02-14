@@ -9,6 +9,7 @@ using Spotify.Configuration;
 using Spotify.Services;
 using Spotify.Services.Interfaces;
 using System;
+using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
@@ -93,8 +94,10 @@ namespace Spotify
             var jitterer = new Random();
             return HttpPolicyExtensions
                 .HandleTransientHttpError()
-                .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
-                .WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.5, retryAttempt))
+                .OrResult(msg => 
+                    msg.StatusCode == HttpStatusCode.TooManyRequests ||
+                    msg.StatusCode == HttpStatusCode.NotFound)
+                .WaitAndRetryAsync(10, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.5, retryAttempt))
                                                     + TimeSpan.FromMilliseconds(jitterer.Next(333, 666)));
         }
     }
