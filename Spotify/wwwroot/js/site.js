@@ -47,3 +47,11 @@ function PrettyPrintElapsedTime(elapsedSeconds) {
 
     return secondsMessage;
 }
+
+const IsAuthenticated = () => GetAccessToken() != null;
+
+$(document).ready(function() {
+    if (IsAuthenticated())
+        return;
+    $("#logoutButton").parent().remove();
+});
