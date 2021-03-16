@@ -1,4 +1,8 @@
 ﻿@using System.Text.Encodings.Web
+@using Microsoft.Extensions.Options
+@using Spotify.Configuration
+@inject IOptions<SpotifyClientConfiguration> OptionsClientConfiguration
+
 @{
     ViewData["Title"] = "Home";
 }
@@ -21,7 +25,7 @@
                     "user-read-recently-played",
                     "streaming"
                 ].join("%20");
-                window.location = `https://accounts.spotify.com/authorize?client_id=@(ViewBag.ClientId)&redirect_uri=@(GetEncodedRedirectUri())&scope=${scopes}&response_type=code`;
+                window.location = `https://accounts.spotify.com/authorize?client_id=@(OptionsClientConfiguration.Value.ClientId)&redirect_uri=@(GetEncodedRedirectUri())&scope=${scopes}&response_type=code`;
             } else {
                 await GetAuthorization(params.code);
                 window.location = "@Url.Action("PlaylistSearch", "Home")";
@@ -45,9 +49,9 @@
 }
 
 @functions {
-string GetEncodedRedirectUri()
-{
-    var baseUrl = $"{Context.Request.Scheme}://{Context.Request.Host}/";
-    return UrlEncoder.Default.Encode(baseUrl);
-}
+    string GetEncodedRedirectUri()
+    {
+        var baseUrl = $"{Context.Request.Scheme}://{Context.Request.Host}/";
+        return UrlEncoder.Default.Encode(baseUrl);
+    }
 }
