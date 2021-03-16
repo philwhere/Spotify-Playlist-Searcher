@@ -128,9 +128,14 @@ function MatchesOnSongArtistOrAlbum(track, query) {
 }
 
 function Matches(field, query) {
-    field = NormalizeDiacritics(field);
-    return field.toLowerCase().includes(query.toLowerCase());
+    field = NormalizeDiacritics(field).toLowerCase();
+    query = query.toLowerCase();
+    return field.includes(query) || RemoveApostrophesAndQuotes(field).includes(query);
 }
+
+function RemoveApostrophesAndQuotes(str) {
+    return str.replaceAll("'", "").replaceAll("’", "");
+};
 
 function NormalizeDiacritics(str) {
     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -203,11 +208,15 @@ function RemoveSongFromLocal(playlistId, songUri) {
     Search();
 }
 
-async function RefreshData() {
+async function UpdatePlaylistsSnapshot() {
     await EnsureTokenIsFresh();
-    ShowLoader("Refreshing playlists...");
+    ShowLoader("Getting playlists...");
     const requestDate = new Date();
-    return await fetch(`/api/spotify/playlists?accessToken=${GetAccessToken()}`)
+    let uri = `/api/spotify/playlists?accessToken=${GetAccessToken()}`;
+    const debugCacheKey = GlobalUrlParams.get("debugCacheKey");
+    uri += debugCacheKey ? `&debugCacheKey=${debugCacheKey}` : "";
+
+    return await fetch(uri)
         .then(response => response.json())
         .then(json => {
             GlobalDataLastRequestedDate = requestDate;
@@ -244,23 +253,23 @@ function UpdateSearchOption(option) {
     Search();
 }
 
-function BeginTrackingStaleness() {
+function TrackPlaylistsSnapshotStaleness() {
     const elapsedSeconds = (new Date() - GlobalDataLastRequestedDate) / 1000;
     const elapsedTimeMessage = `Refreshed ${PrettyPrintElapsedTime(elapsedSeconds)} ago`;
     $("#lastRefresh").text(elapsedTimeMessage);
-    setTimeout(BeginTrackingStaleness, 1000);
+    setTimeout(TrackPlaylistsSnapshotStaleness, 1000);
 }
 
 $(document).ready(async () => {
     SetViewType();
-    await RefreshData();
-    BeginTrackingStaleness();
+    await UpdatePlaylistsSnapshot();
+    TrackPlaylistsSnapshotStaleness();
 
     // Listeners
     // ------------------
     $("#searchBar").keyup(() => Search());
     $("#searchOptions li").click((e) => UpdateSearchOption(e.currentTarget.innerText));
-    $("#refreshDataButton").click(async () => await RefreshData());
+    $("#refreshDataButton").click(async () => await UpdatePlaylistsSnapshot());
     $("#secretViewSwitch").click(() => SwitchViews());
     $(window).resize(() => SetViewType());
 });
