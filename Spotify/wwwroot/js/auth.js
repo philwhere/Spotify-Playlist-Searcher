@@ -1,20 +1,40 @@
-﻿const GetAccessToken = () => localStorage.getItem("access_token");
-const GetRefreshToken = () => localStorage.getItem("refresh_token");
-const GetAccessTokenExpiry = () => parseInt(localStorage.getItem("token_expiry"));
+﻿const LocalStorageKeys = Object.freeze({
+    ACCESS_TOKEN: "access_token",
+    REFRESH_TOKEN: "refresh_token",
+    TOKEN_EXPIRY: "token_expiry",
+    REDIRECT_URL: "redirect_uri"
+});
+
+const GetAccessToken = () => localStorage.getItem(LocalStorageKeys.ACCESS_TOKEN);
+const GetRefreshToken = () => localStorage.getItem(LocalStorageKeys.REFRESH_TOKEN);
+const GetAccessTokenExpiry = () => parseInt(localStorage.getItem(LocalStorageKeys.TOKEN_EXPIRY));
+
 
 function SetupAuthorization(accessToken, refreshToken, tokenExpiry) {
-    localStorage.setItem("access_token", accessToken);
-    localStorage.setItem("refresh_token", refreshToken);
-    localStorage.setItem("token_expiry", tokenExpiry);
+    localStorage.setItem(LocalStorageKeys.ACCESS_TOKEN, accessToken);
+    localStorage.setItem(LocalStorageKeys.REFRESH_TOKEN, refreshToken);
+    localStorage.setItem(LocalStorageKeys.TOKEN_EXPIRY, tokenExpiry);
 }
 
 async function EnsureTokenIsFresh() {
+    if (!GetAccessToken()) {
+        AuthorizeClient();
+        return;
+    }
+
     const fiveMinutesInMs = 300000; // safety buffer
     const now = new Date().valueOf();
     const expiryWithBufferSubtracted = GetAccessTokenExpiry() - fiveMinutesInMs;
     const tokenIsAlive = expiryWithBufferSubtracted > now;
     if (!tokenIsAlive)
         await RefreshToken();
+}
+
+function AuthorizeClient() {
+    localStorage.clear();
+    const currentUrl = window.location.href;
+    localStorage.setItem(LocalStorageKeys.REDIRECT_URL, currentUrl);
+    window.location.href = "/"; // This page launches the authorization flow
 }
 
 async function RefreshToken() {
@@ -27,7 +47,7 @@ async function RefreshToken() {
         })
         .catch((error) => {
             //alert("Refresh exploded");
-            window.location.href = "/";
+            AuthorizeClient();
             throw error;
         });
 }

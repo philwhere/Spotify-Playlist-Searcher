@@ -28,6 +28,13 @@
                 window.location = `https://accounts.spotify.com/authorize?client_id=@(OptionsClientConfiguration.Value.ClientId)&redirect_uri=@(GetEncodedRedirectUri())&scope=${scopes}&response_type=code`;
             } else {
                 await GetAuthorization(params.code);
+
+                const possibleRedirect = localStorage.getItem(LocalStorageKeys.REDIRECT_URL);
+                if (possibleRedirect) {
+                    localStorage.removeItem(LocalStorageKeys.REDIRECT_URL);
+                    window.location = possibleRedirect;
+                    return;
+                }
                 window.location = "@Url.Action("PlaylistSearch", "Home")";
             }
         });
@@ -41,7 +48,7 @@
                     SetupAuthorization(json.access_token, json.refresh_token, CalculateExpiryInUnixMs(json.expires_in));
                 })
                 .catch((error) => {
-                    window.location.href = "/";
+                    AuthorizeClient();
                     throw error;
                 });
         }
