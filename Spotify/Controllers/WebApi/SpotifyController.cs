@@ -42,12 +42,27 @@ namespace Spotify.Controllers.WebApi
         [Route("playlists")]
         public async Task<IActionResult> GetMyPlaylistsWithSongs(string accessToken, string debugCacheKey = "1")
         {
+            async Task<List<PlaylistItem>> GetPlaylists() => await _spotifyClient.GetMyPlaylistsWithSongs(accessToken);
 #if DEBUG
-            var playlists = await GetDebugPlaylists(accessToken, debugCacheKey);
+            var playlists = await GetWithDebugCaching(GetPlaylists, nameof(GetMyPlaylistsWithSongs), debugCacheKey);
 #else
-            var playlists = await _spotifyClient.GetMyPlaylistsWithSongs(accessToken);
+            var playlists = await GetPlaylists();
 #endif
             return new OkObjectResult(playlists);
+        }
+
+        [HttpGet]
+        [Route("liked")]
+        public async Task<IActionResult> GetLibrarySongs(string debugCacheKey = "1")
+        {
+            var accessToken = ExtractBearerToken();
+            async Task<SpotifyItemResponse<SongItem>> GetSongs() => await _spotifyClient.GetAllLibrarySongs(accessToken);
+#if DEBUG
+            var librarySongs = await GetWithDebugCaching(GetSongs, nameof(GetLibrarySongs), debugCacheKey);
+#else
+            var librarySongs = await GetSongs();
+#endif
+            return new OkObjectResult(librarySongs);
         }
 
         [HttpGet]
@@ -65,15 +80,16 @@ namespace Spotify.Controllers.WebApi
             return bearerToken;
         }
 
-        private async Task<List<PlaylistItem>> GetDebugPlaylists(string accessToken, string debugCacheKey)
+        private async Task<T> GetWithDebugCaching<T>(Func<Task<T>> get, string methodName, string debugCacheKey)
         {
+            debugCacheKey = methodName + debugCacheKey;
             var cache = new FileCache();
             if (cache[debugCacheKey] != null)
-                return ((string)cache[debugCacheKey]).FromJson<List<PlaylistItem>>();
+                return ((string)cache[debugCacheKey]).FromJson<T>();
 
-            var playlists = await _spotifyClient.GetMyPlaylistsWithSongs(accessToken);
-            cache.Add(debugCacheKey, playlists.ToJson(), DateTimeOffset.Now.AddDays(1));
-            return playlists;
+            var result = await get.Invoke();
+            cache.Add(debugCacheKey, result.ToJson(), DateTimeOffset.Now.AddDays(1));
+            return result;
         }
     }
 }

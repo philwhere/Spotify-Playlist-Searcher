@@ -6,5 +6,7 @@ namespace Spotify.Models.Responses
     {
         public List<TItem> items { get; set; }
         public string next { get; set; }
+        public int limit { get; set; }
+        public int total { get; set; }
     }
 }
