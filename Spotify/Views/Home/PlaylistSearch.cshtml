@@ -9,7 +9,14 @@
             <h4 id="lastRefresh" class="session-text">Refreshed</h4>
         </div>
         <div class="col-xs-6 refresh-button-container">
-            <div id="refreshDataButton" class="btn spotty-button">Refresh Data</div>
+            <span id="advancedRefreshToggle" class="refresh-icon body-content glyphicon glyphicon-triangle-bottom" aria-hidden="true"></span>
+            <div id="refreshDataButton" class="btn spotty-button">Refresh All</div>
+        </div>
+    </div>
+    <div id="advancedRefreshRow" class="row equal" style="display: none">
+        <div class="col-xs-offset-6 col-xs-6 refresh-button-container">
+            <span id="chosePlaylistsFilterButton" class="refresh-icon body-content glyphicon glyphicon-sunglasses" aria-hidden="true"></span>
+            <div id="refreshSomeButton" class="btn spotty-button">Refresh Some</div>
         </div>
     </div>
     <hr />
@@ -32,23 +39,38 @@
 
     <div id="mobileResultsContainer">
     </div>
-    
+
     <div id="desktopResultsContainer" class="panel panel-default media hidden">
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th style="width: 25%;" class="text-center">Playlist</th>
-                        <th style="width: 35%;">Artist</th>
-                        <th style="width: 40%;">Track</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
-        </div>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th style="width: 25%;" class="text-center">Playlist</th>
+                    <th style="width: 35%;">Artist</th>
+                    <th style="width: 40%;">Track</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
 </div>
 <div>
 </div>
 
+<div id="playlistsFilterModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content filter-modal">
+            <div class="modal-header">
+                <button id="clearFilterSelectionButton" type="button" class="btn spotty-button pull-right">Unselect all</button>
+                <h3 class="modal-title">Choose playlists to refresh</h3>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button id="saveFilterSelectionButton" type="button" class="btn spotty-button" data-dismiss="modal">Done</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section scripts {
     <environment include="Development">

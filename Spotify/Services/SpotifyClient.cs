@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -27,6 +28,13 @@ namespace Spotify.Services
         public async Task<List<PlaylistItem>> GetMyPlaylistsWithSongs(string accessToken)
         {
             var playlists = await GetMyPlaylists(accessToken);
+            await PopulateSongsForPlaylists(playlists, accessToken);
+            return playlists;
+        }
+
+        public async Task<List<PlaylistItem>> GetPlaylistsWithSongs(string accessToken, IEnumerable<string> playlistIds)
+        {
+            var playlists = await GetPlaylists(accessToken, playlistIds);
             await PopulateSongsForPlaylists(playlists, accessToken);
             return playlists;
         }
@@ -70,7 +78,14 @@ namespace Spotify.Services
             return songs;
         }
 
-        
+
+        private async Task<List<PlaylistItem>> GetPlaylists(string accessToken, IEnumerable<string> playlistIds)
+        {
+            var getPlaylistTasks = playlistIds.Select(id => GetPlaylist(accessToken, id));
+            var playlists = (await Task.WhenAll(getPlaylistTasks)).ToList();
+            return playlists;
+        }
+
         private async Task<Profile> GetProfile(string accessToken)
         {
             const string url = "https://api.spotify.com/v1/me";
@@ -83,6 +98,13 @@ namespace Spotify.Services
             var profile = await GetProfile(accessToken);
             var allPlaylists = await GetAllPlaylists(accessToken);
             return allPlaylists.FindAll(p => p.owner.id == profile.id);
+        }
+
+        private async Task<PlaylistItem> GetPlaylist(string accessToken, string playlistId)
+        {
+            var url = $"https://api.spotify.com/v1/playlists/{playlistId}";
+            var playlist = await _httpClient.GetWithToken<PlaylistItem>(url, accessToken);
+            return playlist;
         }
 
         private async Task<List<PlaylistItem>> GetAllPlaylists(string accessToken)

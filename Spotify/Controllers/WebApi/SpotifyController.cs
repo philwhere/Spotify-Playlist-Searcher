@@ -15,6 +15,7 @@ namespace Spotify.Controllers.WebApi
     public class SpotifyController : ControllerBase
     {
         private readonly ISpotifyClient _spotifyClient;
+        private string AccessToken => ExtractBearerToken();
 
         public SpotifyController(ISpotifyClient spotifyClient)
         {
@@ -25,8 +26,7 @@ namespace Spotify.Controllers.WebApi
         [Route("playlists/{playlistId}/tracks/{trackUri}")]
         public async Task<IActionResult> RemoveTrackFromPlaylist(string playlistId, string trackUri)
         {
-            var token = ExtractBearerToken();
-            await _spotifyClient.RemoveTrackFromPlaylist(playlistId, trackUri, token);
+            await _spotifyClient.RemoveTrackFromPlaylist(playlistId, trackUri, AccessToken);
             return new OkResult();
         }
 
@@ -40,9 +40,9 @@ namespace Spotify.Controllers.WebApi
 
         [HttpGet]
         [Route("playlists")]
-        public async Task<IActionResult> GetMyPlaylistsWithSongs(string accessToken, string debugCacheKey = "1")
+        public async Task<IActionResult> GetMyPlaylistsWithSongs(string debugCacheKey = "1")
         {
-            async Task<List<PlaylistItem>> GetPlaylists() => await _spotifyClient.GetMyPlaylistsWithSongs(accessToken);
+            async Task<List<PlaylistItem>> GetPlaylists() => await _spotifyClient.GetMyPlaylistsWithSongs(AccessToken);
 #if DEBUG
             var playlists = await GetWithDebugCaching(GetPlaylists, nameof(GetMyPlaylistsWithSongs), debugCacheKey);
 #else
@@ -51,12 +51,19 @@ namespace Spotify.Controllers.WebApi
             return new OkObjectResult(playlists);
         }
 
+        [HttpPost]
+        [Route("playlists")]
+        public async Task<IActionResult> GetSelectedPlaylistsWithSongs(IEnumerable<string> playlistIds)
+        {
+            var playlists = await _spotifyClient.GetPlaylistsWithSongs(AccessToken, playlistIds);
+            return new OkObjectResult(playlists);
+        }
+
         [HttpGet]
         [Route("liked")]
         public async Task<IActionResult> GetLibrarySongs(string debugCacheKey = "1")
         {
-            var accessToken = ExtractBearerToken();
-            async Task<SpotifyItemResponse<SongItem>> GetSongs() => await _spotifyClient.GetAllLibrarySongs(accessToken);
+            async Task<SpotifyItemResponse<SongItem>> GetSongs() => await _spotifyClient.GetAllLibrarySongs(AccessToken);
 #if DEBUG
             var librarySongs = await GetWithDebugCaching(GetSongs, nameof(GetLibrarySongs), debugCacheKey);
 #else
@@ -72,6 +79,7 @@ namespace Spotify.Controllers.WebApi
             var authorization = await _spotifyClient.GetAuthorizationByCode(code, redirectUri);
             return new OkObjectResult(authorization);
         }
+
 
         private string ExtractBearerToken()
         {

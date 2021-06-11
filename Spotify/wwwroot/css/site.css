@@ -132,11 +132,16 @@ td {
     border-radius: 30px;
     border-color: white;
     padding-top: 5px;
+    background-color: transparent;
 }
 
-    .spotty-button:hover, .spotty-button:focus {
+    .spotty-button:active,
+    .spotty-button:active:focus,
+    .spotty-button:hover,
+    .spotty-button:focus {
         color: white;
         font-weight: bold;
+        outline: 0;
     }
 
 .artist-name {
@@ -192,6 +197,21 @@ tr.non-library-song:active {
     cursor: pointer;
 }
 
+.playlist-filter-row {
+    padding: 5px 5px 5px 10px;
+}
+
+    .playlist-filter-row:hover,
+    .playlist-filter-row:focus,
+    .playlist-filter-row:active {
+        background: rgba(29, 185, 84, 0.6);
+        cursor: pointer;
+    }
+
+.playlist-filter-row-selected {
+    background: rgba(29, 185, 84, 0.6);
+}
+
 .session-text {
     font-size: 17px;
 }
@@ -207,4 +227,15 @@ tr.non-library-song:active {
     display: flex;
     align-items: center;
     justify-content: flex-end;
+}
+
+
+.refresh-icon:hover,
+.refresh-icon:focus,
+.refresh-icon:active {
+    cursor: pointer;
+}
+
+.filter-modal {
+    background-color: #282828;
 }

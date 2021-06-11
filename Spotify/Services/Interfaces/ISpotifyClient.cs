@@ -7,6 +7,7 @@ namespace Spotify.Services.Interfaces
     public interface ISpotifyClient
     {
         Task<List<PlaylistItem>> GetMyPlaylistsWithSongs(string accessToken);
+        Task<List<PlaylistItem>> GetPlaylistsWithSongs(string accessToken, IEnumerable<string> playlistUris);
         Task<List<PlaylistItem>> GetAllPlaylistsWithSongs(string accessToken);
         Task RemoveTrackFromPlaylist(string playlistId, string trackUri, string accessToken);
         Task<AuthorizationCodeResult> GetAuthorizationByCode(string authorizationCode, string redirectUri);

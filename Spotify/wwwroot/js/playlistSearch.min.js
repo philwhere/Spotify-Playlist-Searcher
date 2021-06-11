@@ -3,6 +3,7 @@ var GlobalSelectedSearchOption = "All";
 var GlobalLastSearchTimestamp;
 var GlobalPlaylists;
 var GlobalDataLastRequestedDate;
+var GlobalSelectedFilteredPlaylistsIds = [];
 
 function Search() {
     const query = $("#searchBar").val().trim();
@@ -63,7 +64,7 @@ function DisplayMobileResults(playlistMatches) {
 
 function BuildMobilePlaylistHtml(playlist) {
     const songs = playlist.songs.items;
-    const playlistSection = 
+    const playlistSection =
         `<div class="playlist-section">
             <div class="row">
                 <div class="col-xs-12 text-left">
@@ -77,7 +78,7 @@ function BuildMobilePlaylistHtml(playlist) {
                 <p class="song-name">${song.track.name}</p>
                 <p class="artist-name">${song.track.artistsString}</p>
             </div>`, "");
-    const songsSection = 
+    const songsSection =
         `<div class="row">
             <div class="col-xs-12 text-left unpad">${playlistSongsHtml}</div>
         </div>`;
@@ -155,8 +156,8 @@ async function RemoveFromServer(playlistId, songUri) {
     const options = {
         method: "DELETE",
         headers: {
-             "Content-Type": "application/json",
-             "Authorization": `Bearer ${GetAccessToken()}`
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${GetAccessToken()}`
         },
         body: JSON.stringify(body)
     };
@@ -176,7 +177,8 @@ async function RemoveFromServer(playlistId, songUri) {
 async function GetLibraryStatus(songIds) {
     await EnsureTokenIsFresh();
     const songIdsJoined = songIds.join(",");
-    return await fetch(`https://api.spotify.com/v1/me/tracks/contains?ids=${songIdsJoined}`, { headers: { "Authorization": `Bearer ${GetAccessToken()}` }})
+    const requestOptions = { headers: { "Authorization": `Bearer ${GetAccessToken()}` } };
+    return await fetch(`https://api.spotify.com/v1/me/tracks/contains?ids=${songIdsJoined}`, requestOptions)
         .then(response => {
             if (response.status !== 200)
                 return response.json().then(json => {
@@ -212,11 +214,12 @@ async function UpdatePlaylistsSnapshot() {
     await EnsureTokenIsFresh();
     ShowLoader("Getting playlists...");
     const requestDate = new Date();
-    let uri = `/api/spotify/playlists?accessToken=${GetAccessToken()}`;
+    let uri = `/api/spotify/playlists`;
     const debugCacheKey = GlobalUrlParams.get("debugCacheKey");
     uri += debugCacheKey ? `&debugCacheKey=${debugCacheKey}` : "";
 
-    return await fetch(uri)
+    const requestOptions = { headers: { "Authorization": `Bearer ${GetAccessToken()}` } };
+    return await fetch(uri, requestOptions)
         .then(response => response.json())
         .then(json => {
             GlobalDataLastRequestedDate = requestDate;
@@ -260,6 +263,84 @@ function TrackPlaylistsSnapshotStaleness() {
     setTimeout(TrackPlaylistsSnapshotStaleness, 1000);
 }
 
+function ShowPlaylistFilterModal() {
+    PopulateModalPlaylists();
+    $('#playlistsFilterModal').modal();
+};
+
+function PopulateModalPlaylists() {
+    const playlists = GlobalPlaylists.map(p => {
+        const isSelected = GlobalSelectedFilteredPlaylistsIds.includes(p.id);
+        return {
+            id: p.id,
+            name: p.name,
+            uri: p.uri,
+            isSelected
+        };
+    });
+    const html = playlists.reduce((prev, playlist) => `${prev}
+        <div class="playlist-filter-row${playlist.isSelected ? " playlist-filter-row-selected" : ""}" playlistId="${playlist.id}" uri="${playlist.uri}">
+            <div class="text-center">${playlist.name}</div>
+        </div>`, "");
+
+    $("#playlistsFilterModal .modal-body").first().html(html);
+    ListenForFilterClicks();
+    ListenForFilterChanges();
+}
+
+function ClearFilterSelection() {
+    $(".playlist-filter-row-selected").removeClass("playlist-filter-row-selected");
+}
+
+function SaveFilterSelection() {
+    const selected = [];
+    $(".playlist-filter-row-selected").each(function () {
+        const playlistId = $(this).attr("playlistId");
+        selected.push(playlistId);
+    });
+    GlobalSelectedFilteredPlaylistsIds = selected;
+}
+
+async function RefreshSome() {
+    if (GlobalSelectedFilteredPlaylistsIds.length === 0) {
+        ShowPlaylistFilterModal();
+    } else {
+        await UpdateSelectedPlaylistsSnapshots();
+    }
+}
+
+async function UpdateSelectedPlaylistsSnapshots() {
+    await EnsureTokenIsFresh();
+    ShowLoader("Getting playlists...");
+    const requestDate = new Date();
+    const uri = `/api/spotify/playlists`;
+    const requestOptions =
+    {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${GetAccessToken()}`
+        },
+        body: JSON.stringify(GlobalSelectedFilteredPlaylistsIds)
+    };
+
+    return await fetch(uri, requestOptions)
+        .then(response => response.json())
+        .then(json => {
+            GlobalDataLastRequestedDate = requestDate;
+            json.forEach(freshPlaylist => {
+                const index = GlobalPlaylists.findIndex(p => p.id === freshPlaylist.id);
+                GlobalPlaylists[index] = freshPlaylist;
+            });
+            HideLoader();
+            Search();
+        })
+        .catch((error) => {
+            alert("Data refresh exploded");
+            throw error;
+        });
+}
+
 $(document).ready(async () => {
     SetViewType();
     await UpdatePlaylistsSnapshot();
@@ -271,6 +352,11 @@ $(document).ready(async () => {
     $("#searchOptions li").click((e) => UpdateSearchOption(e.currentTarget.innerText));
     $("#refreshDataButton").click(async () => await UpdatePlaylistsSnapshot());
     $("#secretViewSwitch").click(() => SwitchViews());
+    $("#advancedRefreshToggle").click(() => $("#advancedRefreshRow").slideToggle());
+    $("#chosePlaylistsFilterButton").click(() => ShowPlaylistFilterModal());
+    $("#clearFilterSelectionButton").click(() => ClearFilterSelection());
+    $("#refreshSomeButton").click(async () => await RefreshSome());
+
     $(window).resize(() => SetViewType());
 });
 
@@ -279,5 +365,24 @@ function ListenForRemoveClicks() {
         const playlistId = $(this).attr("playlistId");
         const songUri = $(this).attr("uri");
         await TriggerRemoval(playlistId, songUri);
+    });
+}
+
+function ListenForFilterChanges() {
+    const MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+    const observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+            if (mutation.type === "attributes" && mutation.attributeName === "class")
+                SaveFilterSelection();
+        });
+    });
+    $(".playlist-filter-row").each(function() {
+        observer.observe(this, { attributes: true });
+    });
+}
+
+function ListenForFilterClicks() {
+    $(".playlist-filter-row").click(function () {
+        $(this).toggleClass("playlist-filter-row-selected");
     });
 }
