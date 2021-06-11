@@ -204,13 +204,19 @@ tr.non-library-song:active {
     .playlist-filter-row:hover,
     .playlist-filter-row:focus,
     .playlist-filter-row:active {
-        background: rgba(29, 185, 84, 0.6);
+        background: rgba(109, 109, 109, 0.6);
         cursor: pointer;
     }
 
 .playlist-filter-row-selected {
     background: rgba(29, 185, 84, 0.6);
 }
+
+    .playlist-filter-row-selected:hover,
+    .playlist-filter-row-selected:focus,
+    .playlist-filter-row-selected:active {
+        background: rgba(29, 185, 84, 0.6);
+    }
 
 .session-text {
     font-size: 17px;
@@ -223,7 +229,7 @@ tr.non-library-song:active {
     flex-wrap: wrap;
 }
 
-.refresh-button-container {
+.centered-button-container {
     display: flex;
     align-items: center;
     justify-content: flex-end;
