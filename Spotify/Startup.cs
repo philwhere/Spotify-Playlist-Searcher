@@ -45,6 +45,7 @@ namespace Spotify
             services.AddHttpClient<ISpotifyClient, SpotifyClient>()
                 .SetHandlerLifetime(TimeSpan.FromMinutes(5))
                 .AddPolicyHandler(GetRetryPolicy());
+            services.AddTransient<SpotifyRequestPagingCalculator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -97,8 +98,9 @@ namespace Spotify
                 .OrResult(msg => 
                     msg.StatusCode == HttpStatusCode.TooManyRequests ||
                     msg.StatusCode == HttpStatusCode.NotFound)
-                .WaitAndRetryAsync(10, retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.5, retryAttempt))
-                                                    + TimeSpan.FromMilliseconds(jitterer.Next(333, 666)));
+                .WaitAndRetryAsync(10, retryAttempt => 
+                    TimeSpan.FromSeconds(retryAttempt) +
+                    TimeSpan.FromMilliseconds(jitterer.Next(100, 300)));
         }
     }
 }
