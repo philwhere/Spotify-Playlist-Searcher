@@ -9,6 +9,7 @@ using Spotify.Configuration;
 using Spotify.Services;
 using Spotify.Services.Interfaces;
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -42,9 +43,7 @@ namespace Spotify
 
             services.Configure<SpotifyClientConfiguration>(Configuration.GetSection("SpotifyClientConfiguration"));
 
-            services.AddHttpClient<ISpotifyClient, SpotifyClient>()
-                .SetHandlerLifetime(TimeSpan.FromMinutes(5))
-                .AddPolicyHandler(GetRetryPolicy());
+            services.AddHttpClient<ISpotifyClient, SpotifyClient>().AddPolicyHandler(GetRetryPolicy());
             services.AddTransient<SpotifyRequestPagingCalculator>();
         }
 
@@ -92,7 +91,7 @@ namespace Spotify
 
         private IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
         {
-            var jitterer = new Random();
+            var jitter = new Random();
             return HttpPolicyExtensions
                 .HandleTransientHttpError()
                 .OrResult(msg => 
@@ -100,7 +99,8 @@ namespace Spotify
                     msg.StatusCode == HttpStatusCode.NotFound)
                 .WaitAndRetryAsync(10, retryAttempt => 
                     TimeSpan.FromSeconds(retryAttempt) +
-                    TimeSpan.FromMilliseconds(jitterer.Next(100, 300)));
+                    TimeSpan.FromMilliseconds(jitter.Next(333, 999)),
+                    (response, waitingTime) => Debug.WriteLine($"Waited for {waitingTime.TotalMilliseconds} retrying\n{response.Result.RequestMessage.RequestUri}"));
         }
     }
 }
