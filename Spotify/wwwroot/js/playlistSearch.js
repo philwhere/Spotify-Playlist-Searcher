@@ -372,13 +372,24 @@ function ListenForFilterChanges() {
     const MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
     const observer = new MutationObserver(function (mutations) {
         mutations.forEach(function (mutation) {
-            if (mutation.type === "attributes" && mutation.attributeName === "class")
+            if (mutation.type === "attributes" && mutation.attributeName === "class") {
                 SaveFilterSelection();
+                ToggleClearButton();
+            }
         });
     });
     $(".playlist-filter-row").each(function() {
         observer.observe(this, { attributes: true });
     });
+}
+
+function ToggleClearButton() {
+    if ($(".playlist-filter-row-selected").length > 0 && $("#clearFilterSelectionButton").hasClass("hidden")) {
+        $("#clearFilterSelectionButton").toggleClass("hidden");
+    }
+    if ($(".playlist-filter-row-selected").length === 0 && !$("#clearFilterSelectionButton").hasClass("hidden")) {
+        $("#clearFilterSelectionButton").toggleClass("hidden");
+    }
 }
 
 function ListenForFilterClicks() {

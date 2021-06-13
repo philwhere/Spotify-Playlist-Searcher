@@ -22,12 +22,12 @@ namespace Spotify.Controllers
             return View();
         }
 
-        public async Task<IActionResult> PlaylistSearch()
+        public IActionResult PlaylistSearch()
         {
             return View();
         }
 
-        public async Task<IActionResult> RecentlyPlayed()
+        public IActionResult RecentlyPlayed()
         {
             return View();
         }
