@@ -52,26 +52,26 @@ namespace Spotify.Tests
         };
 
         [Fact]
-        public void GivenNoNextUrl_ThenReturnEmpty()
+        public void GetRemainingUrls_GivenNoNextUrl_ThenReturnNoUrls()
         {
             var urls = _pagingCalculator.GetRemainingUrls(_noPagesNeededResponse);
             urls.Should().BeEmpty();
         }
 
         [Fact]
-        public void GivenOnePageNeeded_ThenReturnOneUrls()
-        {
-            var urls = _pagingCalculator.GetRemainingUrls(_fourPagesNeeded);
-            urls.Should().HaveCount(4);
-            urls.Should().BeEquivalentTo(_expectedFourPageUrls, options => options.WithStrictOrdering());
-        }
-
-        [Fact]
-        public void GivenFourPagesNeeded_ThenReturnFourUrls()
+        public void GetRemainingUrls_GivenOnePageNeeded_ThenReturnOneUrl()
         {
             var urls = _pagingCalculator.GetRemainingUrls(_onePageNeeded);
             urls.Should().HaveCount(1);
             urls.Should().BeEquivalentTo(_expectedOnePageUrl, options => options.WithStrictOrdering());
+        }
+
+        [Fact]
+        public void GetRemainingUrls_GivenFourPagesNeeded_ThenReturnFourUrls()
+        {
+            var urls = _pagingCalculator.GetRemainingUrls(_fourPagesNeeded);
+            urls.Should().HaveCount(4);
+            urls.Should().BeEquivalentTo(_expectedFourPageUrls, options => options.WithStrictOrdering());
         }
     }
 }
