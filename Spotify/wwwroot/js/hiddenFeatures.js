@@ -36,7 +36,9 @@ async function FetchLibraryItems(page) {
 }
 
 function IsNotInAPlaylist(uri) {
-    const playlistUris = GlobalPlaylists.flatMap(p => p.songs.items).map(i => i.track.uri);
+    const playlistUris = GlobalPlaylists
+        .filter(p => p.name !== 'My Shazam Tracks' && p.name !== 'Liked from Radio')
+        .flatMap(p => p.songs.items).map(i => i.track.uri);
     return !playlistUris.some(u => u === uri);
 }
 
