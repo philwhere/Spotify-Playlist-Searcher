@@ -37,7 +37,7 @@ namespace Spotify.Services
 
         public async Task<List<PlaylistItem>> GetPlaylistsWithSongs(string accessToken, IEnumerable<string> playlistIds)
         {
-            var playlists = await GetPlaylists(accessToken, playlistIds);
+            var playlists = await GetPlaylists(accessToken, playlistIds.ToList());
             await PopulateSongsForPlaylists(playlists, accessToken, 6);
             return playlists;
         }
@@ -83,11 +83,15 @@ namespace Spotify.Services
         }
 
 
-        private async Task<List<PlaylistItem>> GetPlaylists(string accessToken, IEnumerable<string> playlistIds)
+        private async Task<List<PlaylistItem>> GetPlaylists(string accessToken, IReadOnlyCollection<string> playlistIds)
         {
-            var getPlaylistTasks = playlistIds.Select(id => GetPlaylist(accessToken, id));
-            var playlists = (await Task.WhenAll(getPlaylistTasks)).ToList();
-            return playlists;
+            if (playlistIds.Count < 10)
+            {
+                var getPlaylistTasks = playlistIds.Select(id => GetPlaylist(accessToken, id));
+                return (await Task.WhenAll(getPlaylistTasks)).ToList();
+            }
+            var myPlaylists = await GetMyPlaylists(accessToken);
+            return myPlaylists.Where(p => playlistIds.Contains(p.id)).ToList();
         }
 
         private async Task<Profile> GetProfile(string accessToken)

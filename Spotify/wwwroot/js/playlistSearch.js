@@ -292,6 +292,10 @@ function ClearFilterSelection() {
     $(".playlist-filter-row-selected").removeClass("playlist-filter-row-selected");
 }
 
+function SelectAllInFilter() {
+    $(".playlist-filter-row").addClass("playlist-filter-row-selected");
+}
+
 function SaveFilterSelection() {
     const selected = [];
     $(".playlist-filter-row-selected").each(function () {
@@ -355,6 +359,7 @@ $(document).ready(async () => {
     $("#advancedRefreshToggle").click(() => $("#advancedRefreshRow").slideToggle());
     $("#chosePlaylistsFilterButton").click(() => ShowPlaylistFilterModal());
     $("#clearFilterSelectionButton").click(() => ClearFilterSelection());
+    $("#selectAllSelectionButton").click(() => SelectAllInFilter());
     $("#refreshSomeButton").click(async () => await RefreshSome());
 
     $(window).resize(() => SetViewType());
@@ -385,10 +390,10 @@ function ListenForFilterChanges() {
 
 function ToggleClearButton() {
     if ($(".playlist-filter-row-selected").length > 0 && $("#clearFilterSelectionButton").hasClass("hidden")) {
-        $("#clearFilterSelectionButton").toggleClass("hidden");
+        $("#clearFilterSelectionButton,#selectAllSelectionButton").toggleClass("hidden");
     }
     if ($(".playlist-filter-row-selected").length === 0 && !$("#clearFilterSelectionButton").hasClass("hidden")) {
-        $("#clearFilterSelectionButton").toggleClass("hidden");
+        $("#clearFilterSelectionButton,#selectAllSelectionButton").toggleClass("hidden");
     }
 }
 
