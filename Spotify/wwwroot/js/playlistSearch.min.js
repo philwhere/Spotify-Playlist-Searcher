@@ -216,7 +216,7 @@ async function UpdatePlaylistsSnapshot() {
     const requestDate = new Date();
     let uri = `/api/spotify/playlists`;
     const debugCacheKey = GlobalUrlParams.get("debugCacheKey");
-    uri += debugCacheKey ? `&debugCacheKey=${debugCacheKey}` : "";
+    uri += debugCacheKey ? `?debugCacheKey=${debugCacheKey}` : "";
 
     const requestOptions = { headers: { "Authorization": `Bearer ${GetAccessToken()}` } };
     return await fetch(uri, requestOptions)
@@ -228,6 +228,7 @@ async function UpdatePlaylistsSnapshot() {
             Search();
         })
         .catch((error) => {
+            HideLoader();
             alert("Data refresh exploded");
             throw error;
         });
