@@ -9,6 +9,7 @@ async function ConnectWebSocket() {
     await EnsureTokenIsFresh();
     const url = `wss://dealer.spotify.com?access_token=${GetAccessToken()}`;
     GlobalEventsWebSocket = new WebSocket(url);
+    console.log(`Socket connected at ${new Date()}`);
     HandlePlaylistEvents();
     KeepAlive();
 }
@@ -89,7 +90,7 @@ function KeepAlive() {
     setInterval(async function () {
         const readyState = GlobalEventsWebSocket.readyState;
         if (readyState === WebSocket.CLOSED || readyState === WebSocket.CLOSING) {
-            alert("web socket connection died");
+            console.log(`Socket closed around ${new Date()}`);
             await ConnectWebSocket();
         }
         if (readyState === WebSocket.OPEN)
