@@ -1,0 +1,93 @@
+﻿@{
+    ViewData["Title"] = "Playlist Search";
+}
+<h2 id="secretViewSwitch" class="spotty-title">Playlist Search</h2>
+
+<div>
+    <div class="row equal">
+        <div class="col-xs-6">
+            <h4 id="lastRefresh" class="session-text">Refreshed</h4>
+        </div>
+        <div class="col-xs-6 centered-button-container">
+            <span id="advancedRefreshToggle" class="refresh-icon body-content glyphicon glyphicon-triangle-bottom" aria-hidden="true"></span>
+            <div id="refreshDataButton" class="btn spotty-button">Refresh All</div>
+        </div>
+    </div>
+    <div id="advancedRefreshRow" class="row equal" style="display: none">
+        <div class="col-xs-offset-6 col-xs-6 centered-button-container">
+            <span id="chosePlaylistsFilterButton" class="refresh-icon body-content glyphicon glyphicon-sunglasses" aria-hidden="true"></span>
+            <div id="refreshSomeButton" class="btn spotty-button">Refresh Some</div>
+        </div>
+    </div>
+    <hr />
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="input-group">
+                <input id="searchBar" type="text" class="form-control" aria-label="...">
+                <div class="input-group-btn">
+                    <button id="selectedSearchOption" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">All <span class="caret"></span></button>
+                    <ul id="searchOptions" class="dropdown-menu dropdown-menu-right">
+                        <li><a href="#">All</a></li>
+                        <li><a href="#">Songs</a></li>
+                        <li><a href="#">Artists</a></li>
+                        <li><a href="#">Albums</a></li>
+                    </ul>
+                </div><!-- /btn-group -->
+            </div><!-- /input-group -->
+        </div><!-- /.col-lg-6 -->
+    </div>
+
+    <div id="mobileResultsContainer">
+    </div>
+
+    <div id="desktopResultsContainer" class="panel panel-default media hidden">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th style="width: 25%;" class="text-center">Playlist</th>
+                    <th style="width: 35%;">Artist</th>
+                    <th style="width: 40%;">Track</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+</div>
+<div>
+</div>
+
+<div id="playlistsFilterModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content filter-modal">
+            <div class="modal-header">
+                <div class="row equal">
+                    <div class="col-xs-8">
+                        <h3 class="modal-title">Choose playlists to refresh</h3>
+                    </div>
+                    <div class="col-xs-4 centered-button-container">
+                        <button id="selectAllSelectionButton" type="button" class="btn spotty-button">Select all</button>
+                        <button id="clearFilterSelectionButton" type="button" class="btn spotty-button hidden">Clear all</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button id="saveFilterSelectionButton" type="button" class="btn spotty-button" data-dismiss="modal">Done</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <environment include="Development">
+        <script src="~/js/playlistSearch.js" asp-append-version=true></script>
+        <script src="~/js/betaPlaylistSearch.js" asp-append-version=true></script>
+        <script src="~/js/hiddenFeatures.js" asp-append-version=true></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/playlistSearch.min.js" asp-append-version=true></script>
+        <script src="~/js/betaPlaylistSearch.min.js" asp-append-version=true></script>
+        <script src="~/js/hiddenFeatures.min.js" asp-append-version=true></script>
+    </environment>
+}

@@ -42,7 +42,7 @@ namespace Spotify.Controllers.WebApi
         [Route("playlists")]
         public async Task<IActionResult> GetMyPlaylistsWithSongs(string debugCacheKey = "1")
         {
-            async Task<List<PlaylistItem>> GetPlaylists() => await _spotifyClient.GetMyPlaylistsWithSongs(AccessToken);
+            async Task<List<PlaylistItem>> GetPlaylists() => await _spotifyClient.GetMyPlaylists(AccessToken);
 #if DEBUG
             var playlists = await GetWithDebugCaching(GetPlaylists, nameof(GetMyPlaylistsWithSongs), debugCacheKey);
 #else
@@ -57,6 +57,15 @@ namespace Spotify.Controllers.WebApi
         {
             var playlists = await _spotifyClient.GetPlaylistsWithSongs(AccessToken, playlistIds);
             return new OkObjectResult(playlists);
+        }
+
+        [HttpGet]
+        [Route("playlists/{playlistId}/exists")]
+        public async Task<IActionResult> CheckPlaylistExists(string playlistId)
+        {
+            var myPlaylists = await _spotifyClient.GetMyPlaylists(AccessToken, false);
+            var exists = myPlaylists.Any(p => p.id == playlistId);
+            return Ok(exists);
         }
 
         [HttpGet]

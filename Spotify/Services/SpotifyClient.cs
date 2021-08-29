@@ -28,11 +28,12 @@ namespace Spotify.Services
                 new MediaTypeWithQualityHeaderValue("application/json"));
         }
         
-        public async Task<List<PlaylistItem>> GetMyPlaylistsWithSongs(string accessToken)
+        public async Task<List<PlaylistItem>> GetMyPlaylists(string accessToken, bool includeSongs)
         {
-            var playlists = await GetMyPlaylists(accessToken);
-            await PopulateSongsForPlaylists(playlists, accessToken, 3);
-            return playlists;
+            var myPlaylists = await GetMyPlaylists(accessToken);
+            if (includeSongs)
+                await PopulateSongsForPlaylists(myPlaylists, accessToken, 3);
+            return myPlaylists;
         }
 
         public async Task<List<PlaylistItem>> GetPlaylistsWithSongs(string accessToken, IEnumerable<string> playlistIds)
@@ -103,9 +104,11 @@ namespace Spotify.Services
 
         private async Task<List<PlaylistItem>> GetMyPlaylists(string accessToken)
         {
-            var profile = await GetProfile(accessToken);
-            var allPlaylists = await GetAllPlaylists(accessToken);
-            return allPlaylists.FindAll(p => p.owner.id == profile.id);
+            var profile = GetProfile(accessToken);
+            var allPlaylists = GetAllPlaylists(accessToken);
+            await Task.WhenAll(profile, allPlaylists);
+
+            return allPlaylists.Result.FindAll(p => p.owner.id == profile.Result.id);
         }
 
         private async Task<PlaylistItem> GetPlaylist(string accessToken, string playlistId)

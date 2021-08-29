@@ -22,6 +22,12 @@ namespace Spotify.Controllers
             return View();
         }
 
+        [Route("/beta/playlistsearch")]
+        public IActionResult BetaPlaylistSearch()
+        {
+            return View();
+        }
+
         public IActionResult RecentlyPlayed()
         {
             return View();

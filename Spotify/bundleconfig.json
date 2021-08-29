@@ -49,5 +49,16 @@
       "renameLocals": false
     },
     "sourceMap": false
+  },
+  {
+    "outputFileName": "wwwroot/js/betaPlaylistSearch.min.js",
+    "inputFiles": [
+      "wwwroot/js/betaPlaylistSearch.js"
+    ],
+    "minify": {
+      "enabled": false,
+      "renameLocals": false
+    },
+    "sourceMap": false
   }
 ]
