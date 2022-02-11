@@ -9,13 +9,19 @@ So I made this. [Enjoy](https://philsps.azurewebsites.net)
 Search by song/artist/album/all and find which playlists you have added those matching tracks to.\
 This is achieved by basically taking a snapshot of every playlist you have and pulling it into browser memory.\
 With an input of "easy", the desktop design looks pretty much like this
+
 Playlist | Artist | Track
 ------------ | ------------- | -------------
 Beige Red Pink | Mac Ayres | Easy
 Cruising | Commodores | Easy
 
-
 Clicking on a row will prompt you to confirm that you want to remove the track from the playlist.
+
+#### Playlist Search BETA
+Same as above but integrates the web sockets API.
+There is handling on playlist events so that the state is updated correctly when you make changes in or outside of the website.
+Try adding a song to one of your playlists on your mobile or desktop client and you will see an update show up if the page is open.
+In beta because I haven't figured out how to handle internet loss.
 
 #### Recently Played
 For when you are just enjoying the music then the Spotify radio ticks over and you can't navigate to the previous tracks.\
