@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Web;
 using Spotify.Models.Responses;
+using static System.Web.HttpUtility;
 
 namespace Spotify.Services
 {
@@ -16,24 +16,30 @@ namespace Spotify.Services
             var numberOfPagesRemaining = totalNumberOfPages - 1;
 
             var remainingUrls = new List<string>();
-            var startingOffset = firstPageResponse.limit;
+
+            var templateUrl = GetTemplateUrl(firstPageResponse.next);
 
             for (var i = 0; i < numberOfPagesRemaining; i++)
             {
-                var offset = i * firstPageResponse.limit + startingOffset;
-                var nextPageUrl = GetUrlWithNewOffset(firstPageResponse.next, offset);
+                var offset = (i + 1) * firstPageResponse.limit;
+                var nextPageUrl = GetUrlWithNewOffset(templateUrl, offset);
                 remainingUrls.Add(nextPageUrl);
             }
             return remainingUrls;
         }
 
 
-        private string GetUrlWithNewOffset(string firstPageNextUrl, int offset)
+        private string GetTemplateUrl(string firstPageResponseNextUrl)
         {
-            var nextUrl = new Uri(firstPageNextUrl);
-            var queryParams = HttpUtility.ParseQueryString(nextUrl.Query);
-            var nextUrlOffset = queryParams["offset"];
-            var newUrl = nextUrl.ToString().Replace($"offset={nextUrlOffset}", $"offset={offset}");
+            var uri = new Uri(firstPageResponseNextUrl);
+            var currentOffset = ParseQueryString(uri.Query)["offset"];
+            var templateUrl = $"{uri}".Replace($"offset={currentOffset}", "offset={{offset}}");
+            return templateUrl;
+        }
+
+        private string GetUrlWithNewOffset(string templateUrl, int offset)
+        {
+            var newUrl = templateUrl.Replace("{{offset}}", $"{offset}");
             return newUrl;
         }
     }
