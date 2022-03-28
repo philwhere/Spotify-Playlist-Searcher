@@ -120,6 +120,7 @@ td {
     font-weight: 900;
     letter-spacing: -0.04em;
     line-height: 1.15;
+    user-select: none;
 }
 
     .spotty-title:hover, spotty-title:focus {
