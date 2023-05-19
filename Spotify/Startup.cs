@@ -45,7 +45,7 @@ namespace Spotify
 
             services.Configure<SpotifyClientConfiguration>(Configuration.GetSection("SpotifyClientConfiguration"));
 
-            services.AddHttpClient<ISpotifyClient, SpotifyClient>().AddPolicyHandler(GetRetryPolicy());
+            services.AddHttpClient<ISpotifyClient, SpotifyClientWithSemaphore>().AddPolicyHandler(GetRetryPolicy());
             services.AddTransient<SpotifyRequestPagingCalculator>();
         }
 
@@ -96,7 +96,7 @@ namespace Spotify
             var jitter = new Random();
             return HttpPolicyExtensions
                 .HandleTransientHttpError()
-                .OrResult(msg => 
+                .OrResult(msg =>
                     msg.StatusCode == HttpStatusCode.TooManyRequests ||
                     msg.StatusCode == HttpStatusCode.NotFound)
                 .WaitAndRetryAsync(
