@@ -10,8 +10,10 @@ using Spotify.Services;
 using Spotify.Services.Interfaces;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 
@@ -97,10 +99,23 @@ namespace Spotify
                 .OrResult(msg => 
                     msg.StatusCode == HttpStatusCode.TooManyRequests ||
                     msg.StatusCode == HttpStatusCode.NotFound)
-                .WaitAndRetryAsync(10, retryAttempt => 
-                    TimeSpan.FromSeconds(retryAttempt) +
-                    TimeSpan.FromMilliseconds(jitter.Next(333, 999)),
-                    (response, waitingTime) => Debug.WriteLine($"Waited for {waitingTime.TotalMilliseconds} retrying\n{response.Result.RequestMessage.RequestUri}"));
+                .WaitAndRetryAsync(
+                    retryCount: 10,
+                    sleepDurationProvider: (retryAttempt, response, context) =>
+                    {
+                        var headers = response.Result.Headers;
+                        var guidanceProvided = headers.TryGetValues("Retry-After", out var providedRetryInSeconds);
+                        var retryAfterInSeconds =
+                            guidanceProvided ? int.Parse(providedRetryInSeconds.First()) : retryAttempt;
+                        return TimeSpan.FromSeconds(retryAfterInSeconds) +
+                               TimeSpan.FromMilliseconds(jitter.Next(111, 333));
+                    },
+                    onRetryAsync: (response, waitingTime, retryCount, context) =>
+                    {
+                        Debug.WriteLine(
+                            $"Waited for {waitingTime.TotalMilliseconds} retrying\n{response.Result.RequestMessage.RequestUri}");
+                        return Task.CompletedTask;
+                    });
         }
     }
 }
